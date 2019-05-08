@@ -1,4 +1,5 @@
 import glob
+import joblib
 import os
 import re
 import sys
@@ -7,6 +8,8 @@ from string import Template
 
 from cliff.app import App
 from cliff.commandmanager import CommandManager
+from kubernetes import client
+from kubernetes import config
 
 
 class HiggsDemo(object):
@@ -101,6 +104,15 @@ class HiggsDemo(object):
         return "%s/%s/testoutputs/higgs4lbucket/%s/eventselection" % (
                 self.storage_type, self.bucket, self.run)
 
+
+    def _kube_submit(self, manifests):
+        def submit(manifest):
+            config.load_kube_config()
+            client.BatchV1Api().create_namespaced_job('default', manifest)
+
+        jobs = joblib.Parallel(n_jobs=50)(
+                joblib.delayed(submit)(m) for m in manifests)
+
     def submit(self):
         s3_basedir = self._s3_basedir()
         manifests = []
@@ -138,6 +150,8 @@ class HiggsDemo(object):
 
         for m in manifests:
             print str(m)
+
+        self._kube_submit(manifests)
 
 
 class HiggsDemoCli(App):
