@@ -12,22 +12,24 @@ from cliff.commandmanager import CommandManager
 class HiggsDemo(object):
 
     def __init__(self, dataset_pattern='*Higgs*', config='', namespace='default',
-            image='lukasheinrich/cms-higgs-4l-full', s3_access_key='',
-            s3_secret_key='', s3_host='s3', gcs_access_key='', gcs_secret_key='',
-            gcs_host='gs', cpu_limit='1000m', backoff_limit=5,
-            multipart_threads=10, output_file='/tmp/output.root',
+            image='lukasheinrich/cms-higgs-4l-full', access_key='',
+            secret_key='', storage_type='s3', storage_host='',
+            cpu_limit='1000m', bucket='higgs-demo', output_bucket='higgs-demo',
+            backoff_limit=5,  multipart_threads=10, output_file='/tmp/output.root',
             output_json_file='/tmp/output.json', run='run6'):
         super(HiggsDemo, self).__init__()
         self.dataset_pattern = dataset_pattern
         self.config = config
         self.namespace = namespace
         self.image = image
-        self.s3_access_key = s3_access_key
-        self.s3_secret_key = s3_secret_key
-        self.s3_host = s3_host
-        self.gcs_access_key = gcs_access_key
-        self.gcs_secret_key = gcs_secret_key
-        self.gcs_host = gcs_host
+        self.access_key = access_key
+        self.secret_key = secret_key
+        self.storage_type = storage_type
+        self.storage_host = storage_host
+        if self.storage_host == '':
+            self.storage_host = self.storage_type
+        self.bucket = bucket
+        self.output_bucket = output_bucket
         self.cpu_limit = cpu_limit
         self.backoff_limit = backoff_limit
         self.multipart_threads = multipart_threads
@@ -95,20 +97,13 @@ class HiggsDemo(object):
         return '{}-{}.json'.format(fullsetname,
             str(self._dataset_job_counter[fullsetname]).zfill(4))
 
-    def _s3_basedir(self, storage_type):
-        return "%s/higgs-demo/testoutputs/higgs4lbucket/%s/eventselection" % (storage_type, self.run)
-
-    def _storage_type(self):
-        if self.s3_access_key != '':
-            return 's3'
-        return 'gcs'
+    def _s3_basedir(self):
+        return "%s/%s/testoutputs/higgs4lbucket/%s/eventselection" % (
+                self.storage_type, self.bucket, self.run)
 
     def submit(self):
-        if self.s3_access_key == '' and self.gcs_access_key == '':
-            raise RuntimeError('failed to submit: one of s3 or gcs access key must be given')
-
-        storage_type = self._storage_type()
-        s3_basedir = self._s3_basedir(storage_type)
+        s3_basedir = self._s3_basedir()
+        manifests = []
 
         for datasetfile in glob.glob("datasets_s3/%s" % self.dataset_pattern):
             datasetname = self._datasetname(datasetfile)
@@ -121,26 +116,28 @@ class HiggsDemo(object):
                 jobname = self._jobname(datasetname, fullsetname)
                 s3_outputpath = self._s3_outputpath(datasetname, fullsetname)
 
-                manifest = self._job_manifest(datasetname=datasetname,
-                        namespace=self.namespace,
-                        fullsetname=fullsetname, eventfile=eventfile.strip(),
-                        jobname=jobname, s3_outputpath=s3_outputpath,
-                        config=self.config,
-                        jsonfile=self._jsonfile(self.config),
-                        image=self.image,
-                        s3_basedir=s3_basedir,
-                        s3_access_key=self.s3_access_key,
-                        s3_secret_key=self.s3_secret_key,
-                        s3_host=self.s3_host,
-                        gcs_access_key=self.gcs_access_key,
-                        gcs_secret_key=self.gcs_secret_key,
-                        gcs_host=self.gcs_host,
-                        cpu_limit=self.cpu_limit,
-                        backoff_limit=self.backoff_limit,
-                        multipart_threads=self.multipart_threads,
-                        output_file=self.output_file,
-                        output_json_file=self.output_json_file)
-                print manifest
+                params = {
+                    'datasetname': datasetname, 'namespace': self.namespace,
+                    'fullsetname': fullsetname, 'eventfile': eventfile.strip(),
+                    'jobname': jobname, 's3_output_path': s3_outputpath,
+                    'config': self.config, 'jsonfile': self._jsonfile(self.config),
+                    'image': self.image, 's3_basedir': s3_basedir,
+                    'cpu_limit': self.cpu_limit, 'backoff_limit': self.backoff_limit,
+                    'multipart_threads': self.multipart_threads,
+                    'output_file': self.output_file, 'output_json_file': self.output_json_file
+                }
+                for st in ('s3', 'gcs'):
+                    params["%s_access_key" % st] = ''
+                    params["%s_secret_key" % st] = ''
+                    params["%s_host" % st] = ''
+                params["%s_access_key" % self.storage_type] = self.access_key
+                params["%s_secret_key" % self.storage_type] = self.secret_key
+                params["%s_host" % self.storage_type] = self.storage_host
+
+                manifests.append(self._job_manifest(**params))
+
+        for m in manifests:
+            print str(m)
 
 
 class HiggsDemoCli(App):
@@ -168,13 +165,14 @@ class HiggsDemoCli(App):
 def _higgs_demo(parsed_args):
     return HiggsDemo(dataset_pattern=parsed_args.dataset_pattern,
             config=parsed_args.config, image=parsed_args.image,
-            s3_access_key=parsed_args.s3_access_key,
-            s3_secret_key=parsed_args.s3_secret_key,
-            s3_host=parsed_args.s3_host,
-            gcs_access_key=parsed_args.gcs_access_key,
-            gcs_secret_key=parsed_args.gcs_secret_key,
-            gcs_host=parsed_args.gcs_host,
-            multipart_threads=parsed_args.multipart_threads
+            run=parsed_args.run, namespace=parsed_args.namespace,
+            access_key=parsed_args.access_key,
+            secret_key=parsed_args.secret_key,
+            storage_type=parsed_args.storage_type, storage_host=parsed_args.storage_host,
+            bucket=parsed_args.bucket, output_bucket=parsed_args.output_bucket,
+            cpu_limit=parsed_args.cpu_limit, backoff_limit=parsed_args.backoff_limit,
+            multipart_threads=parsed_args.multipart_threads,
+            output_file=parsed_args.output_file, output_json_file=parsed_args.output_json_file
             )
 
 
