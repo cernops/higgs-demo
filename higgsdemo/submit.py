@@ -41,7 +41,7 @@ class Submit(Command):
                             default='',
                             help='the gcs secret key')
         parser.add_argument('--gcs-host', dest='gcs_host',
-                            default='gs',
+                            default='gcs',
                             help='the gcs host')
         parser.add_argument('--bucket', dest='bucket',
                             default='higgs-demo',
@@ -58,10 +58,15 @@ class Submit(Command):
         parser.add_argument('--mc-threads', dest='multipart_threads',
                             default=10,
                             help='the number of minio threads')
+        parser.add_argument('--output-file', dest='output_file',
+                            default='/tmp/output.root',
+                            help='the local path for the output file')
+        parser.add_argument('--output-json-file', dest='output_json_file',
+                            default='/tmp/output.json',
+                            help='the local path for the output json file')
         return parser
 
     def take_action(self, parsed_args):
-        print parsed_args
         hd = main._higgs_demo(parsed_args)
         hd.submit()
         

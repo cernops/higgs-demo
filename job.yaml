@@ -1,7 +1,8 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: $path
+  name: $jobname
+  namespace: $namespace
 spec:
   template:
     spec:
@@ -17,11 +18,11 @@ spec:
           - name: CMS_OUTPUT_FILE
             value: $output_file
           - name: CMS_OUTPUT_JSON_FILE
-            value: $output_json
+            value: $output_json_file
           - name: CMS_S3_BASEDIR
-            value: $s3_base_dir
+            value: $s3_basedir
           - name: CMS_OUTPUT_S3PATH
-            value: $s3_path
+            value: $s3_outputpath
           - name: CMS_CONFIG
             value: $config
           - name: CMS_DATASET_NAME

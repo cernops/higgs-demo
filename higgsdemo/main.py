@@ -11,14 +11,16 @@ from cliff.commandmanager import CommandManager
 
 class HiggsDemo(object):
 
-    def __init__(self, dataset_pattern='*Higgs*', config='',
+    def __init__(self, dataset_pattern='*Higgs*', config='', namespace='default',
             image='lukasheinrich/cms-higgs-4l-full', s3_access_key='',
             s3_secret_key='', s3_host='s3', gcs_access_key='', gcs_secret_key='',
             gcs_host='gs', cpu_limit='1000m', backoff_limit=5,
-            multipart_threads=10):
+            multipart_threads=10, output_file='/tmp/output.root',
+            output_json_file='/tmp/output.json', run='run6'):
         super(HiggsDemo, self).__init__()
         self.dataset_pattern = dataset_pattern
         self.config = config
+        self.namespace = namespace
         self.image = image
         self.s3_access_key = s3_access_key
         self.s3_secret_key = s3_secret_key
@@ -29,6 +31,11 @@ class HiggsDemo(object):
         self.cpu_limit = cpu_limit
         self.backoff_limit = backoff_limit
         self.multipart_threads = multipart_threads
+        self.output_file = output_file
+        self.output_json_file = output_json_file
+        self.run = run
+
+        self._dataset_job_counter = {}
 
     def _job_template(self):
         content = ''
@@ -80,17 +87,48 @@ class HiggsDemo(object):
     def _fullsetname(self, datasetname):
         return datasetname.rsplit('_', 1)[0]
 
+    def _jobname(self, datasetname, fullsetname):
+        return '{}-{}'.format(datasetname,
+                str(self._dataset_job_counter[fullsetname]).zfill(4)).replace('_', '')
+
+    def _s3_outputpath(self, datasetname, fullsetname):
+        return '{}-{}.json'.format(fullsetname,
+            str(self._dataset_job_counter[fullsetname]).zfill(4))
+
+    def _s3_basedir(self, storage_type):
+        return "%s/higgs-demo/testoutputs/higgs4lbucket/%s/eventselection" % (storage_type, self.run)
+
+    def _storage_type(self):
+        if self.s3_access_key != '':
+            return 's3'
+        return 'gcs'
+
     def submit(self):
+        if self.s3_access_key == '' and self.gcs_access_key == '':
+            raise RuntimeError('failed to submit: one of s3 or gcs access key must be given')
+
+        storage_type = self._storage_type()
+        s3_basedir = self._s3_basedir(storage_type)
+
         for datasetfile in glob.glob("datasets_s3/%s" % self.dataset_pattern):
             datasetname = self._datasetname(datasetfile)
             fullsetname = self._fullsetname(datasetname)
 
             for eventfile in open(datasetfile).readlines():
+                self._dataset_job_counter.setdefault(fullsetname, 0)
+                cur = self._dataset_job_counter[fullsetname]
+                self._dataset_job_counter[fullsetname] += 1
+                jobname = self._jobname(datasetname, fullsetname)
+                s3_outputpath = self._s3_outputpath(datasetname, fullsetname)
+
                 manifest = self._job_manifest(datasetname=datasetname,
+                        namespace=self.namespace,
                         fullsetname=fullsetname, eventfile=eventfile.strip(),
+                        jobname=jobname, s3_outputpath=s3_outputpath,
                         config=self.config,
                         jsonfile=self._jsonfile(self.config),
                         image=self.image,
+                        s3_basedir=s3_basedir,
                         s3_access_key=self.s3_access_key,
                         s3_secret_key=self.s3_secret_key,
                         s3_host=self.s3_host,
@@ -99,7 +137,9 @@ class HiggsDemo(object):
                         gcs_host=self.gcs_host,
                         cpu_limit=self.cpu_limit,
                         backoff_limit=self.backoff_limit,
-                        multipart_threads=self.multipart_threads)
+                        multipart_threads=self.multipart_threads,
+                        output_file=self.output_file,
+                        output_json_file=self.output_json_file)
                 print manifest
 
 
