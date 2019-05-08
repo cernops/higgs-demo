@@ -2,7 +2,7 @@ boto3
 cliff
 joblib
 jupyterlab
-kubernetes
+kubernetes==10.0.0a1
 matplotlib
 numpy
 parse

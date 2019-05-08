@@ -1,5 +1,5 @@
 import logging
-import higgsdemo.main as demo
+from . import main as demo
 import time
 
 from cliff.command import Command
