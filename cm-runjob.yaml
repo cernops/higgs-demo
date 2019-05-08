@@ -18,7 +18,7 @@ data:
     echo "Running locally over: ${CMS_INPUT_FILES}"
     
     
-    /opt/cms/entrypoint.sh cmsRun ${CMS_CONFIG}
+    /opt/cms/entrypoint.sh cmsRun ${CMS_CONFIG} > /dev/null 2>&1
     
     echo validate
     echo 'test(){if(gFile->Get("demo")){return 0;} return 1;}' > /tmp/test.C
