@@ -14,7 +14,7 @@ spec:
           - name: CMS_JSON
             value: $jsonfile
           - name: CMS_INPUT_FILES
-            value: $filename
+            value: $eventfile
           - name: CMS_OUTPUT_FILE
             value: $output_file
           - name: CMS_OUTPUT_JSON_FILE
@@ -28,7 +28,7 @@ spec:
           - name: CMS_DATASET_NAME
             value: $datasetname
           - name: MC_MULTIPART_THREADS
-            value: $multipart_threads
+            value: "$multipart_threads"
           - name: S3_ACCESS
             value: $s3_access_key
           - name: S3_SECRET
@@ -46,14 +46,16 @@ spec:
             cpu: $cpu_limit
           limits:
             cpu: $cpu_limit
-        backoffLimit: $backoff_limit
-        completions: 1
-        parallelism: 1
-        restartPolicy: Never
         volumeMounts:
           - mountPath: /runjob.sh
+            subPath: runjob.sh
             name: runjob
+      restartPolicy: Never
       volumes:
       - name: runjob
         configMap:
           name: runjob
+          defaultMode: 0755
+  backoffLimit: $backoff_limit
+  completions: 1
+  parallelism: 1

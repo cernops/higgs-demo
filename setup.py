@@ -41,7 +41,7 @@ setup(
     scripts=[],
 
     provides=[],
-    install_requires=['cliff'],
+    install_requires=['cliff', 'joblib', 'kubernetes', 'requests'],
 
     namespace_packages=[],
     packages=find_packages(),

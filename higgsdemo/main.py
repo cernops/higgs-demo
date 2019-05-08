@@ -3,13 +3,15 @@ import joblib
 import os
 import re
 import sys
+import yaml
 
 from string import Template
 
 from cliff.app import App
 from cliff.commandmanager import CommandManager
 from kubernetes import client
-from kubernetes import config
+from kubernetes import config as kube_config
+from kubernetes import utils
 
 
 class HiggsDemo(object):
@@ -42,9 +44,12 @@ class HiggsDemo(object):
 
         self._dataset_job_counter = {}
 
+        kube_config.load_kube_config()
+        self.kube_client = client.ApiClient()
+
     def _job_template(self):
         content = ''
-        with open('job.yaml', 'r') as job_file:
+        with open('job-template.yaml', 'r') as job_file:
             content = job_file.read()
             return content
 
@@ -106,12 +111,19 @@ class HiggsDemo(object):
 
 
     def _kube_submit(self, manifests):
-        def submit(manifest):
-            config.load_kube_config()
-            client.BatchV1Api().create_namespaced_job('default', manifest)
+        #def submit(manifest):
+        #    yml_obj = yaml.load(manifest)
+        #    utils.create_from_yaml_single_item(self.kubeclient, yml_obj)
+        #    client.BatchV1Api().create_namespaced_job(obj['metadata']['namespace'], obj)
 
-        jobs = joblib.Parallel(n_jobs=50)(
-                joblib.delayed(submit)(m) for m in manifests)
+        #jobs = joblib.Parallel(n_jobs=50)(
+        #        joblib.delayed(submit)(m) for m in manifests)
+        utils.create_from_yaml(self.kube_client, 'cm-runjob.yaml')
+        for m in manifests:
+            f = open('/tmp/yaml', 'w')
+            f.write(m)
+            f.close()
+            utils.create_from_yaml(self.kube_client, '/tmp/yaml')
 
     def submit(self):
         s3_basedir = self._s3_basedir()
@@ -131,7 +143,7 @@ class HiggsDemo(object):
                 params = {
                     'datasetname': datasetname, 'namespace': self.namespace,
                     'fullsetname': fullsetname, 'eventfile': eventfile.strip(),
-                    'jobname': jobname, 's3_output_path': s3_outputpath,
+                    'jobname': jobname, 's3_outputpath': s3_outputpath,
                     'config': self.config, 'jsonfile': self._jsonfile(self.config),
                     'image': self.image, 's3_basedir': s3_basedir,
                     'cpu_limit': self.cpu_limit, 'backoff_limit': self.backoff_limit,
