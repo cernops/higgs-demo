@@ -23,6 +23,36 @@ The dataset-pattern param specifies which subset of the full dataset should be
 processed - the whole dataset is ~70TB, so this is a useful option.
 
 Check `--help` for further options to customize the submission.
+```bash
+  --config CONFIG       the demo analyzer config file
+  --dataset-pattern DATASET_PATTERN
+                        the pattern of datasets to process
+  --run RUN             the name of the demo run
+  --namespace NAMESPACE
+                        the kube namespace to use
+  --image IMAGE         the docker image to use for jobs
+  --access-key ACCESS_KEY
+                        the storage access key
+  --secret-key SECRET_KEY
+                        the storage secret key
+  --storage-type STORAGE_TYPE
+                        the type of storage (s3 or gcs)
+  --storage-host STORAGE_HOST
+                        the storage host(for s3 or gcs)
+  --bucket BUCKET       the name of the bucket holding the data
+  --output-bucket OUTPUT_BUCKET
+                        the name of the bucket to write the output
+  --cpu-limit CPU_LIMIT
+                        the kube cpu request / limit
+  --backoff-limit BACKOFF_LIMIT
+                        the kube job backoff limit
+  --mc-threads MULTIPART_THREADS
+                        the number of minio threads
+  --output-file OUTPUT_FILE
+                        the local path for the output file
+  --output-json-file OUTPUT_JSON_FILE
+                        the local path for the output json file
+```
 
 ## Python API
 
