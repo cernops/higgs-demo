@@ -9,6 +9,7 @@ from string import Template
 
 from cliff.app import App
 from cliff.commandmanager import CommandManager
+from datetime import datetime
 from kubernetes import client
 from kubernetes import config as kube_config
 from kubernetes import utils
@@ -174,8 +175,11 @@ class HiggsDemo(object):
         self._cleanup_jobs()
         self._cleanup_pods()
 
+    def prepare(self):
+        utils.create_from_yaml(self.kube_client, 'ds-imagepull.yaml')
+
     def status(self):
-        result = {'jobs': {'succeeded': 0}, 'pods': {}}
+        result = {'date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'jobs': {'succeeded': 0}, 'pods': {}}
         jobs = self._get_jobs()
         for job in jobs:
             if 'succeeded' in job['status'] and job['status']['succeeded'] == 1:
