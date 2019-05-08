@@ -5,9 +5,9 @@ metadata:
 data:
   runjob.sh: |+
     set -e
-    mc config host add s3 ${S3_HOST} ${S3_ACCESS} ${S3_SECRET}
+    #mc config host add s3 ${S3_HOST} ${S3_ACCESS} ${S3_SECRET}
     if [ ! -z "${GCS_ACCESS}" ]; then
-      mc config host add gcs ${GCS_HOST} ${GCS_ACCESS} ${GCS_SECRET}
+      mc config host add gs ${GCS_HOST} ${GCS_ACCESS} ${GCS_SECRET} --api s3v2 --lookup dns
     fi
     
     mkdir /tmp/inputs

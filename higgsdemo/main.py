@@ -32,7 +32,10 @@ class HiggsDemo(object):
         self.storage_type = storage_type
         self.storage_host = storage_host
         if self.storage_host == '':
-            self.storage_host = self.storage_type
+            if self.storage_type == 'gcs':
+                self.storage_host = 'https://storage.googleapis.com'
+            elif self.storage_type == 's3':
+                self.storage_host = 'https://s3.amazonaws.com'
         self.bucket = bucket
         self.output_bucket = output_bucket
         self.cpu_limit = cpu_limit
@@ -205,7 +208,7 @@ class HiggsDemo(object):
 
                 params = {
                     'datasetname': datasetname, 'namespace': self.namespace,
-                    'fullsetname': fullsetname, 'eventfile': eventfile.strip(),
+                    'fullsetname': fullsetname, 'eventfile': eventfile.strip().replace('s3', self.storage_type),
                     'jobname': jobname, 's3_outputpath': s3_outputpath,
                     'config': self.config, 'jsonfile': self._jsonfile(self.config),
                     'image': self.image, 's3_basedir': s3_basedir,
@@ -213,7 +216,7 @@ class HiggsDemo(object):
                     'multipart_threads': self.multipart_threads,
                     'output_file': self.output_file, 'output_json_file': self.output_json_file
                 }
-                for st in ('s3', 'gcs'):
+                for st in ('s3', 'gs'):
                     params["%s_access_key" % st] = ''
                     params["%s_secret_key" % st] = ''
                     params["%s_host" % st] = ''

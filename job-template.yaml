@@ -36,11 +36,11 @@ spec:
           - name: S3_HOST
             value: $s3_host
           - name: GCS_ACCESS
-            value: $gcs_access_key
+            value: $gs_access_key
           - name: GCS_SECRET
-            value: $gcs_secret_key
+            value: $gs_secret_key
           - name: GCS_HOST
-            value: $gcs_host
+            value: $gs_host
         resources:
           requests:
             cpu: $cpu_limit
