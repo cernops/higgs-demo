@@ -1,0 +1,58 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: $path
+spec:
+  template:
+    spec:
+      containers:
+      - name: cmsrun
+        image: $image
+        command: [ "bash", "-c", "/runjob.sh" ]
+        env:
+          - name: CMS_JSON
+            value: $jsonfile
+          - name: CMS_INPUT_FILES
+            value: $filename
+          - name: CMS_OUTPUT_FILE
+            value: $output_file
+          - name: CMS_OUTPUT_JSON_FILE
+            value: $output_json
+          - name: CMS_S3_BASEDIR
+            value: $s3_base_dir
+          - name: CMS_OUTPUT_S3PATH
+            value: $s3_path
+          - name: CMS_CONFIG
+            value: $config
+          - name: CMS_DATASET_NAME
+            value: $datasetname
+          - name: MC_MULTIPART_THREADS
+            value: $multipart_threads
+          - name: S3_ACCESS
+            value: $s3_access_key
+          - name: S3_SECRET
+            value: $s3_secret_key
+          - name: S3_HOST
+            value: $s3_host
+          - name: GCS_ACCESS
+            value: $gcs_access_key
+          - name: GCS_SECRET
+            value: $gcs_secret_key
+          - name: GCS_HOST
+            value: $gcs_host
+        resources:
+          requests:
+            cpu: $cpu_limit
+          limits:
+            cpu: $cpu_limit
+        backoffLimit: $backoff_limit
+        completions: 1
+        parallelism: 1
+        restartPolicy: Never
+        volumeMounts:
+          - mountPath: /runjob.sh
+            name: runjob
+      volumes:
+      - name: runjob
+        configMap:
+          name: runjob
