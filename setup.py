@@ -52,7 +52,9 @@ setup(
             'higgsdemo = higgsdemo.main:main'
         ],
         'higgs.demo': [
-            'submit = higgsdemo.submit:Submit',
+            'cleanup = higgsdemo.cmd:Cleanup',
+            'submit = higgsdemo.cmd:Submit',
+            'watch = higgsdemo.cmd:Watch',
         ],
     },
 

@@ -125,6 +125,18 @@ class HiggsDemo(object):
             f.close()
             utils.create_from_yaml(self.kube_client, '/tmp/yaml')
 
+    def cleanup(self):
+        result = client.CoreV1Api().delete_collection_namespaced_job(
+                self.namespace, limit = limit).to_dict()
+        c = result['metadata'].get('_continue')
+        while c:
+            result = client.CoreV1Api().delete_collection_namespaced_pod(
+                    namespace, limit = limit, _continue = c).to_dict()
+            c = result['metadata'].get('_continue')
+
+    def watch(self):
+        pass
+
     def submit(self):
         s3_basedir = self._s3_basedir()
         manifests = []

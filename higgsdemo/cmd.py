@@ -3,8 +3,26 @@ import main
 
 from cliff.command import Command
 
+
+class Cleanup(Command):
+    "clean up a higgs demo deployment in the currently configured cluster"
+
+    log = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super(Cleanup, self).get_parser(prog_name)
+        parser.add_argument('--namespace', dest='namespace',
+                            default='default',
+                            help='the kube namespace to use')
+        return parser
+
+    def take_action(self, parsed_args):
+        hd = main._higgs_demo(parsed_args)
+        hd.cleanup()
+
+
 class Submit(Command):
-    "Submits the higgs demo to the currently configured cluster."
+    "submit the higgs demo to the currently configured cluster"
 
     log = logging.getLogger(__name__)
 
@@ -63,6 +81,23 @@ class Submit(Command):
     def take_action(self, parsed_args):
         hd = main._higgs_demo(parsed_args)
         hd.submit()
+        
+
+class Watch(Command):
+    "watch status of the higgs demo deployment in the currently configured cluster"
+
+    log = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super(Watch, self).get_parser(prog_name)
+        parser.add_argument('--namespace', dest='namespace',
+                            default='default',
+                            help='the kube namespace to use')
+        return parser
+
+    def take_action(self, parsed_args):
+        hd = main._higgs_demo(parsed_args)
+        hd.watch()
         
 
 class Error(Command):
