@@ -15,7 +15,7 @@ class Cleanup(Command):
         parser.add_argument('--namespace', dest='namespace',
                             default='default',
                             help='the kube namespace to use')
-        parser.add_argument('--limit', dest='limit',
+        parser.add_argument('--limit', dest='limit', type=int,
                             default=1000,
                             help='the limit of objects per kube api query')
         return parser
@@ -80,6 +80,9 @@ class Submit(Command):
         parser.add_argument('--output-json-file', dest='output_json_file',
                             default='/tmp/output.json',
                             help='the local path for the output json file')
+        parser.add_argument('--limit', dest='limit', type=int,
+                            default=1000,
+                            help='the limit of objects per kube api query')
         return parser
 
     def take_action(self, parsed_args):

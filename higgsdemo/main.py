@@ -21,7 +21,7 @@ class HiggsDemo(object):
             secret_key='', storage_type='s3', storage_host='',
             cpu_limit='1000m', bucket='higgs-demo', output_bucket='higgs-demo',
             backoff_limit=5,  multipart_threads=10, output_file='/tmp/output.root',
-            output_json_file='/tmp/output.json', run='run6', limit='1000'):
+            output_json_file='/tmp/output.json', run='run6', limit=1000):
         super(HiggsDemo, self).__init__()
         self.dataset_pattern = dataset_pattern
         self.config = config
@@ -110,12 +110,14 @@ class HiggsDemo(object):
         return "%s/%s/testoutputs/higgs4lbucket/%s/eventselection" % (
                 self.storage_type, self.bucket, self.run)
 
-
     def _kube_submit(self, manifests):
         utils.create_from_yaml(self.kube_client, 'cm-runjob.yaml')
-        for m in manifests:
+        for i in range(0, len(manifests), self.limit):
+            yaml = ''
+            for m in manifests[i:i + self.limit]:
+                yaml += "\n---\n%s" % m
             f = open('/tmp/yaml', 'w')
-            f.write(m)
+            f.write(yaml)
             f.close()
             utils.create_from_yaml(self.kube_client, '/tmp/yaml')
 
