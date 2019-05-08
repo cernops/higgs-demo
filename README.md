@@ -14,9 +14,11 @@ the cluster used for the analysis.
 
 ## Command Line
 
+### Submit
+
 You can trigger the analysis via the command line with:
 ```bash
-higgs-demo submit --dataset-pattern datasets_s3/*SMHiggs* --s3-access-key ... --s3-secret-key ...
+higgsdemo submit --dataset-pattern datasets_s3/*SMHiggs* --s3-access-key ... --s3-secret-key ...
 ```
 
 The dataset-pattern param specifies which subset of the full dataset should be
@@ -25,7 +27,7 @@ two params are the S3 credentials.
 
 An example reading from CERN's S3 service:
 ```bash
-higgs-demo submit --dataset-pattern datasets_s3/*SMHiggs* --storage-host https://s3.cern.ch --s3-access-key ... --s3-secret-key ...
+higgsdemo submit --dataset-pattern datasets_s3/*SMHiggs* --storage-host https://s3.cern.ch --s3-access-key ... --s3-secret-key ...
 ```
 
 Check `--help` for further options to customize the submission.
@@ -58,6 +60,19 @@ Check `--help` for further options to customize the submission.
                         the local path for the output file
   --output-json-file OUTPUT_JSON_FILE
                         the local path for the output json file
+```
+
+### Watch and Cleanup
+
+Similar commands to the above.
+```bash
+higgsdemo watch
+{'pods': {'Running': 48, 'total': 56, 'Succeeded': 8}, 'jobs': {'total': 56, 'succeeded': 8}}
+...
+```
+
+```bash
+higgsdemo cleanup
 ```
 
 ## Python API
