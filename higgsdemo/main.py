@@ -144,13 +144,50 @@ class HiggsDemo(object):
                     namespace, limit = limit, _continue = c).to_dict()
             c = result['metadata'].get('_continue')
       
+    def _get_jobs(self):
+        result = client.BatchV1Api().list_namespaced_job(
+                self.namespace, limit=self.limit).to_dict()
+        c = result['metadata'].get('_continue')
+        jobs = result['items']
+        while c:
+            result = client.BatchV1Api().list_namespaced_job(
+                self.namespace, limit=self.limit, _continue = c).to_dict()
+            c = result['metadata'].get('_continue')
+            jobs.extend(result['items'])
+        return jobs
+
+    def _get_pods(self):
+        result = client.CoreV1Api().list_namespaced_pod(
+                self.namespace, limit=self.limit).to_dict()
+        c = result['metadata'].get('_continue')
+        pods = result['items']
+        while c:
+            result = client.CoreV1Api().list_namespaced_pod(
+                self.namespace, limit=self.limit, _continue = c).to_dict()
+            c = result['metadata'].get('_continue')
+            pods.extend(result['items'])
+        return pods
 
     def cleanup(self):
         self._cleanup_jobs()
         self._cleanup_pods()
 
-    def watch(self):
-        pass
+    def status(self):
+        result = {'jobs': {'succeeded': 0}, 'pods': {}}
+        jobs = self._get_jobs()
+        for job in jobs:
+            if 'succeeded' in job['status'] and job['status']['succeeded'] == 1:
+               result['jobs']['succeeded'] += 1
+        result['jobs']['total'] = len(jobs)
+
+        pods = self._get_pods()
+        for pod in pods:
+            phase = pod['status']['phase']
+            result['pods'].setdefault(phase, 0)
+            result['pods'][phase] += 1
+        result['pods']['total'] = len(pods)
+
+        return result
 
     def submit(self):
         s3_basedir = self._s3_basedir()
@@ -186,9 +223,6 @@ class HiggsDemo(object):
                 params["%s_host" % self.storage_type] = self.storage_host
 
                 manifests.append(self._job_manifest(**params))
-
-        for m in manifests:
-            print str(m)
 
         self._kube_submit(manifests)
 

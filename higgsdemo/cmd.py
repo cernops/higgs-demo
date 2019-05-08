@@ -1,5 +1,6 @@
 import logging
 import main
+import time
 
 from cliff.command import Command
 
@@ -100,7 +101,9 @@ class Watch(Command):
 
     def take_action(self, parsed_args):
         hd = main._higgs_demo(parsed_args)
-        hd.watch()
+        while True:
+            print hd.status()
+            time.sleep(10)
         
 
 class Error(Command):
