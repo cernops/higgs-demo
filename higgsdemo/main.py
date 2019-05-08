@@ -21,7 +21,7 @@ class HiggsDemo(object):
             secret_key='', storage_type='s3', storage_host='',
             cpu_limit='1000m', bucket='higgs-demo', output_bucket='higgs-demo',
             backoff_limit=5,  multipart_threads=10, output_file='/tmp/output.root',
-            output_json_file='/tmp/output.json', run='run6'):
+            output_json_file='/tmp/output.json', run='run6', limit='1000'):
         super(HiggsDemo, self).__init__()
         self.dataset_pattern = dataset_pattern
         self.config = config
@@ -41,6 +41,7 @@ class HiggsDemo(object):
         self.output_file = output_file
         self.output_json_file = output_json_file
         self.run = run
+        self.limit = limit
 
         self._dataset_job_counter = {}
 
@@ -125,14 +126,28 @@ class HiggsDemo(object):
             f.close()
             utils.create_from_yaml(self.kube_client, '/tmp/yaml')
 
-    def cleanup(self):
-        result = client.CoreV1Api().delete_collection_namespaced_job(
-                self.namespace, limit = limit).to_dict()
+    def _cleanup_jobs(self):
+        result = client.BatchV1Api().delete_collection_namespaced_job(
+                self.namespace, limit = self.limit).to_dict()
+        c = result['metadata'].get('_continue')
+        while c:
+            result = client.BatchV1Api().delete_collection_namespaced_job(
+                    namespace, limit = limit, _continue = c).to_dict()
+            c = result['metadata'].get('_continue')
+
+    def _cleanup_pods(self):
+        result = client.CoreV1Api().delete_collection_namespaced_pod(
+                self.namespace, limit = self.limit).to_dict()
         c = result['metadata'].get('_continue')
         while c:
             result = client.CoreV1Api().delete_collection_namespaced_pod(
                     namespace, limit = limit, _continue = c).to_dict()
             c = result['metadata'].get('_continue')
+      
+
+    def cleanup(self):
+        self._cleanup_jobs()
+        self._cleanup_pods()
 
     def watch(self):
         pass
@@ -201,17 +216,7 @@ class HiggsDemoCli(App):
 
 
 def _higgs_demo(parsed_args):
-    return HiggsDemo(dataset_pattern=parsed_args.dataset_pattern,
-            config=parsed_args.config, image=parsed_args.image,
-            run=parsed_args.run, namespace=parsed_args.namespace,
-            access_key=parsed_args.access_key,
-            secret_key=parsed_args.secret_key,
-            storage_type=parsed_args.storage_type, storage_host=parsed_args.storage_host,
-            bucket=parsed_args.bucket, output_bucket=parsed_args.output_bucket,
-            cpu_limit=parsed_args.cpu_limit, backoff_limit=parsed_args.backoff_limit,
-            multipart_threads=parsed_args.multipart_threads,
-            output_file=parsed_args.output_file, output_json_file=parsed_args.output_json_file
-            )
+    return HiggsDemo(**parsed_args.__dict__)
 
 
 def main(argv=sys.argv[1:]):

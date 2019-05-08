@@ -14,6 +14,9 @@ class Cleanup(Command):
         parser.add_argument('--namespace', dest='namespace',
                             default='default',
                             help='the kube namespace to use')
+        parser.add_argument('--limit', dest='limit',
+                            default=1000,
+                            help='the limit of objects per kube api query')
         return parser
 
     def take_action(self, parsed_args):
