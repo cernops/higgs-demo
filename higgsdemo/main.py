@@ -112,13 +112,6 @@ class HiggsDemo(object):
 
 
     def _kube_submit(self, manifests):
-        #def submit(manifest):
-        #    yml_obj = yaml.load(manifest)
-        #    utils.create_from_yaml_single_item(self.kubeclient, yml_obj)
-        #    client.BatchV1Api().create_namespaced_job(obj['metadata']['namespace'], obj)
-
-        #jobs = joblib.Parallel(n_jobs=50)(
-        #        joblib.delayed(submit)(m) for m in manifests)
         utils.create_from_yaml(self.kube_client, 'cm-runjob.yaml')
         for m in manifests:
             f = open('/tmp/yaml', 'w')
@@ -169,6 +162,10 @@ class HiggsDemo(object):
         return pods
 
     def cleanup(self):
+        try:
+            client.CoreV1Api().delete_namespaced_config_map('runjob', self.namespace)
+        except:
+            pass
         self._cleanup_jobs()
         self._cleanup_pods()
 
