@@ -20,7 +20,7 @@ class HiggsDemo(object):
     def __init__(self, dataset_pattern='*Higgs*', config='', namespace='default',
             image='lukasheinrich/cms-higgs-4l-full', access_key='',
             secret_key='', storage_type='s3', storage_host='',
-            cpu_limit='1000m', bucket='higgs-demo', output_bucket='higgs-demo',
+            cpu_limit='1000m', bucket='higgs-demo-nl', output_bucket='higgs-demo-nl',
             backoff_limit=5,  multipart_threads=10, output_file='/tmp/output.root',
             output_json_file='/tmp/output.json', run='run6', limit=1000):
         super(HiggsDemo, self).__init__()
@@ -212,7 +212,7 @@ class HiggsDemo(object):
 
                 params = {
                     'datasetname': datasetname, 'namespace': self.namespace,
-                    'fullsetname': fullsetname, 'eventfile': eventfile.strip().replace('s3', self.storage_type),
+                    'fullsetname': fullsetname, 'eventfile': eventfile.strip().replace('s3', self.storage_type).replace('higgs-demo', self.bucket),
                     'jobname': jobname, 's3_outputpath': s3_outputpath,
                     'config': self.config, 'jsonfile': self._jsonfile(self.config),
                     'image': self.image, 's3_basedir': s3_basedir,
