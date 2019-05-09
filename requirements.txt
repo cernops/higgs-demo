@@ -1,0 +1,10 @@
+boto3
+cliff
+joblib
+jupyterlab
+kubernetes
+matplotlib
+numpy
+parse
+plotutils
+requests

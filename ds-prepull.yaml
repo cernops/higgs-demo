@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: prepull
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: prepull
+  template:
+    metadata:
+      labels:
+        name: prepull
+    spec:
+      initContainers:
+      - name: prepull
+        image: docker
+        command: ["docker", "pull", "gcr.io/nimble-valve-236407/cms-higgs-4l-full"]
+        volumeMounts:
+        - name: docker
+          mountPath: /var/run
+      volumes:
+      - name: docker
+        hostPath:
+          path: /var/run
+      containers:
+      - name: pause
+        image: gcr.io/google_containers/pause

@@ -176,7 +176,7 @@ class HiggsDemo(object):
         self._cleanup_pods()
 
     def prepare(self):
-        utils.create_from_yaml(self.kube_client, 'ds-imagepull.yaml')
+        utils.create_from_yaml(self.kube_client, 'ds-prepull.yaml')
 
     def status(self):
         result = {'date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'jobs': {'succeeded': 0}, 'pods': {}}

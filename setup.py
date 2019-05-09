@@ -41,7 +41,18 @@ setup(
     scripts=[],
 
     provides=[],
-    install_requires=['cliff', 'joblib', 'kubernetes', 'requests'],
+    install_requires=[
+        'boto3',
+        'cliff',
+        'joblib',
+        #'jupyterlab',
+        'kubernetes', 
+        'matplotlib',
+        'numpy',
+        'parse',
+        'plotutils',
+        'requests'
+    ],
 
     namespace_packages=[],
     packages=find_packages(),
@@ -53,6 +64,8 @@ setup(
         ],
         'higgs.demo': [
             'cleanup = higgsdemo.cmd:Cleanup',
+            'notebook = higgsdemo.cmd:Notebook',
+            'prepare = higgsdemo.cmd:Prepare',
             'submit = higgsdemo.cmd:Submit',
             'watch = higgsdemo.cmd:Watch',
         ],

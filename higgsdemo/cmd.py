@@ -1,8 +1,9 @@
 import logging
-import main
+import higgsdemo.main as demo
 import time
 
 from cliff.command import Command
+from jupyterlab.labapp import main as jupyterlab_main
 
 
 class Cleanup(Command):
@@ -21,7 +22,7 @@ class Cleanup(Command):
         return parser
 
     def take_action(self, parsed_args):
-        hd = main._higgs_demo(parsed_args)
+        hd = demo._higgs_demo(parsed_args)
         hd.cleanup()
 
 
@@ -86,7 +87,7 @@ class Submit(Command):
         return parser
 
     def take_action(self, parsed_args):
-        hd = main._higgs_demo(parsed_args)
+        hd = demo._higgs_demo(parsed_args)
         hd.submit()
         
 
@@ -103,11 +104,44 @@ class Watch(Command):
         return parser
 
     def take_action(self, parsed_args):
-        hd = main._higgs_demo(parsed_args)
+        hd = demo._higgs_demo(parsed_args)
         while True:
-            print hd.status()
+            print(hd.status())
             time.sleep(10)
         
+
+class Prepare(Command):
+    "prepare the cluster for a higgs demo deployment (image pull, ...)"
+
+    log = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super(Prepare, self).get_parser(prog_name)
+        parser.add_argument('--namespace', dest='namespace',
+                            default='default',
+                            help='the kube namespace to use')
+        parser.add_argument('--limit', dest='limit', type=int,
+                            default=1000,
+                            help='the limit of objects per kube api query')
+        return parser
+
+    def take_action(self, parsed_args):
+        hd = demo._higgs_demo(parsed_args)
+        hd.prepare()
+
+
+class Notebook(Command):
+    "launch the demo jupyter notebook"
+
+    log = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super(Notebook, self).get_parser(prog_name)
+        return parser
+
+    def take_action(self, parsed_args):
+        jupyterlab_main()
+
 
 class Error(Command):
     "Always raises an error"
