@@ -84,3 +84,11 @@ higgs = HiggsDemo(dataset_pattern='*SMHiggs*')
 higgs.submit()
 ```
 
+## Installation
+
+```bash
+virtualenv .venv
+. .venv/bin/activate
+pip install -r requirements
+python setup.py install
+```
