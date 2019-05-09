@@ -12,13 +12,13 @@ data:
     
     mkdir /tmp/inputs
     echo ${CMS_INPUT_FILES}|tr ',' '\n'|while read x;do
-        mc cp $x /tmp/inputs;
+        time mc cp $x /tmp/inputs;
     done
     export CMS_INPUT_FILES=$(find /tmp/inputs -type f|sed 's|^|file:|'|tr '\n' ','|sed 's|,$||')
     echo "Running locally over: ${CMS_INPUT_FILES}"
     
     
-    /opt/cms/entrypoint.sh cmsRun ${CMS_CONFIG} > /dev/null 2>&1
+    time /opt/cms/entrypoint.sh cmsRun ${CMS_CONFIG} > /dev/null 2>&1
     
     echo validate
     echo 'test(){if(gFile->Get("demo")){return 0;} return 1;}' > /tmp/test.C
@@ -28,5 +28,5 @@ data:
     /opt/cms/entrypoint.sh python /dump_json_pyroot.py ${CMS_OUTPUT_FILE} ${CMS_DATASET_NAME} ${CMS_OUTPUT_JSON_FILE}
     cat ${CMS_OUTPUT_JSON_FILE}
     
-    mc cp ${CMS_OUTPUT_JSON_FILE} ${CMS_S3_BASEDIR}/${CMS_OUTPUT_S3PATH}
+    time mc cp ${CMS_OUTPUT_JSON_FILE} ${CMS_S3_BASEDIR}/${CMS_OUTPUT_S3PATH}
     mc ls ${CMS_S3_BASEDIR}/${CMS_OUTPUT_S3PATH}
