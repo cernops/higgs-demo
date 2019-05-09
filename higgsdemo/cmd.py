@@ -61,10 +61,10 @@ class Submit(Command):
                             default='',
                             help='the storage host(for s3 or gcs)')
         parser.add_argument('--bucket', dest='bucket',
-                            default='higgs-demo',
+                            default='higgs-demo-nl',
                             help='the name of the bucket holding the data')
         parser.add_argument('--output-bucket', dest='output_bucket',
-                            default='higgs-demo',
+                            default='higgs-demo-nl',
                             help='the name of the bucket to write the output')
         parser.add_argument('--cpu-limit', dest='cpu_limit',
                             default="1000m",
