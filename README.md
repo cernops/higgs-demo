@@ -6,6 +6,12 @@ This tool helps with the submission and management of the Higgs Analysis
 against any existing Kubernetes clusters. It relies on the Higgs dataset being
 accessing either in a S3 or GCS bucket.
 
+## Dataset
+
+The CMS Higgs dataset is available as open data, and has 70TB over 26920 files.
+
+At CERN it's available under s3.cern.ch://higgs-demo.
+
 ## Pre-requisites
 
 It is expected you already have a kubernetes cluster configured in your
