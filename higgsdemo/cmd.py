@@ -3,6 +3,7 @@ import higgsdemo.main as demo
 import time
 
 from cliff.command import Command
+from datetime import datetime
 from jupyterlab.labapp import main as jupyterlab_main
 
 
@@ -106,8 +107,8 @@ class Watch(Command):
     def take_action(self, parsed_args):
         hd = demo._higgs_demo(parsed_args)
         while True:
-            print(hd.status())
-            time.sleep(10)
+            fn = lambda r : print("%s %s" % (datetime.now(), r))
+            hd.status(fn=fn)
         
 
 class Prepare(Command):

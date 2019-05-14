@@ -9,10 +9,10 @@ from string import Template
 
 from cliff.app import App
 from cliff.commandmanager import CommandManager
-from datetime import datetime
 from kubernetes import client
 from kubernetes import config as kube_config
 from kubernetes import utils
+from kubernetes import watch
 
 
 class HiggsDemo(object):
@@ -165,7 +165,9 @@ class HiggsDemo(object):
                 self.namespace, limit=self.limit, _continue = c).to_dict()
             c = result['metadata'].get('_continue')
             pods.extend(result['items'])
-        return pods
+
+        rv = result['metadata']['resource_version']
+        return pods, rv
 
     def cleanup(self):
         try:
@@ -178,22 +180,47 @@ class HiggsDemo(object):
     def prepare(self):
         utils.create_from_yaml(self.kube_client, 'ds-prepull.yaml')
 
-    def status(self):
-        result = {'date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'jobs': {'succeeded': 0}, 'pods': {}}
-        jobs = self._get_jobs()
-        for job in jobs:
-            if 'succeeded' in job['status'] and job['status']['succeeded'] == 1:
-               result['jobs']['succeeded'] += 1
-        result['jobs']['total'] = len(jobs)
-
-        pods = self._get_pods()
+    def status(self, fn=None):
+        self._pods = {'Running': [], 'Pending': [], 'Succeeded': [], 'Failed': [], 'Unknown': []}
+        pods, rv = self._get_pods()
         for pod in pods:
+            pod_name = pod['metadata']['name']
+            for p in self._pods.keys():
+                try:
+                    self._pods[p].remove(pod_name)
+                except:
+                    pass
             phase = pod['status']['phase']
-            result['pods'].setdefault(phase, 0)
-            result['pods'][phase] += 1
-        result['pods']['total'] = len(pods)
+            self._pods[phase].append(pod_name)
 
-        return result
+        result = {}
+        for p in self._pods.keys():
+            result[p] = len(self._pods[p])
+
+        if not fn:
+            return result
+
+        fn(result)
+        w = watch.Watch()
+        api = client.CoreV1Api()
+        for item in w.stream(
+            api.list_namespaced_pod, namespace=self.namespace,
+                timeout_seconds=0, resource_version=rv):
+            pod_name = item['object'].metadata.name
+            phase = item['object'].status.phase
+            t = item['type']
+            for p in self._pods.keys():
+                try:
+                    self._pods[p].remove(pod_name)
+                except:
+                    pass
+            if t != 'DELETED':
+                self._pods[phase].append(pod_name)
+            result = {}
+            for p in self._pods.keys():
+                result[p] = len(self._pods[p])
+
+            fn(result)
 
     def submit(self):
         s3_basedir = self._s3_basedir()
