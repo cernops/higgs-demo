@@ -17,6 +17,7 @@ spec:
       labels:
         name: prepull
     spec:
+      terminationGracePeriodSeconds: 5
       initContainers:
       - name: prepull
         image: gcr.io/nimble-valve-236407/cms-higgs-4l-full
