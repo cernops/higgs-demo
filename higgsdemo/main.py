@@ -4,7 +4,7 @@ import os
 import re
 import sys
 import yaml
-
+import traceback
 from string import Template
 
 from cliff.app import App
@@ -22,10 +22,11 @@ class HiggsDemo(object):
             secret_key='', storage_type='s3', storage_host='',
             cpu_limit='1000m', bucket='higgs-demo-nl', output_bucket='higgs-demo-nl',
             backoff_limit=5,  multipart_threads=10, output_file='/tmp/output.root',
-            output_json_file='/tmp/output.json', run='run6', limit=1000):
+            output_json_file='/tmp/output.json', run='run6', limit=1000, dry = False, cluster = None):
         super(HiggsDemo, self).__init__()
         self.dataset_pattern = dataset_pattern
         self.config = config
+        self.dry = dry
         self.namespace = namespace
         self.image = image
         self.access_key = access_key
@@ -46,13 +47,24 @@ class HiggsDemo(object):
         self.output_json_file = output_json_file
         self.run = run
         self.limit = limit
-        self.kube_client = None
         self._dataset_job_counter = {}
+        self.default_cluster_name = cluster or None
 
-
-    def _connect_cluster(self, cluster_name = None):
+    def _connect_cluster(self, cluster_name):
         kube_config.load_kube_config(context = cluster_name)
-        self.kube_client = client.ApiClient()
+        api_client = client.ApiClient()
+        batch_client = client.BatchV1Api()
+        batch_client.api_client = api_client
+
+        core_client = client.CoreV1Api()
+        core_client.api_client = api_client
+
+        clients = {
+            'api': api_client,
+            'batch': batch_client,
+            'core': core_client
+        }
+        return clients
 
     def _job_template(self):
         content = ''
@@ -116,9 +128,16 @@ class HiggsDemo(object):
         return "%s/%s/testoutputs/higgs4lbucket/%s/eventselection" % (
                 self.storage_type, self.bucket, self.run)
 
-    def _kube_submit(self, manifests, cluster_name = None):
+    def _create_from_yaml(self,filename, cluster_name):
+        cl = self._connect_cluster(cluster_name)['api']
+        if self.dry:
+            print('dry-run {}'.format(filename))
+            return
         self._connect_cluster(cluster_name)
-        utils.create_from_yaml(self.kube_client, 'cm-runjob.yaml')
+        utils.create_from_yaml(cl, filename)
+
+    def _kube_submit(self, manifests, cluster_name):
+        self._create_from_yaml('cm-runjob.yaml', cluster_name)
         for i in range(0, len(manifests), self.limit):
             yaml = ''
             for m in manifests[i:i + self.limit]:
@@ -126,45 +145,54 @@ class HiggsDemo(object):
             f = open('/tmp/yaml', 'w')
             f.write(yaml)
             f.close()
-            utils.create_from_yaml(self.kube_client, '/tmp/yaml')
+            self._create_from_yaml('/tmp/yaml', cluster_name)
 
-    def _cleanup_jobs(self):
-        result = client.BatchV1Api().delete_collection_namespaced_job(
+    def _cleanup_cm(self, cluster_name):
+        cl = self._connect_cluster(cluster_name)['core']
+        cl.delete_namespaced_config_map('runjob', self.namespace)
+
+    def _cleanup_jobs(self, cluster_name):
+        cl = self._connect_cluster(cluster_name)['batch']
+        result = cl.delete_collection_namespaced_job(
                 self.namespace, limit = self.limit).to_dict()
         c = result['metadata'].get('_continue')
         while c:
-            result = client.BatchV1Api().delete_collection_namespaced_job(
+            result = cl.BatchV1Api().delete_collection_namespaced_job(
                     namespace, limit = limit, _continue = c).to_dict()
             c = result['metadata'].get('_continue')
 
-    def _cleanup_pods(self):
-        result = client.CoreV1Api().delete_collection_namespaced_pod(
+    def _cleanup_pods(self, cluster_name):
+        cl = self._connect_cluster(cluster_name)['core']
+        result = cl.delete_collection_namespaced_pod(
                 self.namespace, limit = self.limit).to_dict()
         c = result['metadata'].get('_continue')
         while c:
-            result = client.CoreV1Api().delete_collection_namespaced_pod(
+            result = cl.delete_collection_namespaced_pod(
                     namespace, limit = limit, _continue = c).to_dict()
             c = result['metadata'].get('_continue')
       
-    def _get_jobs(self):
-        result = client.BatchV1Api().list_namespaced_job(
+    def _get_jobs(self, cluster_name):
+        cl = self._connect_cluster(cluster_name)['batch']
+        result = cl.list_namespaced_job(
                 self.namespace, limit=self.limit).to_dict()
         c = result['metadata'].get('_continue')
         jobs = result['items']
         while c:
-            result = client.BatchV1Api().list_namespaced_job(
+            result = cl.list_namespaced_job(
                 self.namespace, limit=self.limit, _continue = c).to_dict()
             c = result['metadata'].get('_continue')
             jobs.extend(result['items'])
         return jobs
 
-    def _get_pods(self):
-        result = client.CoreV1Api().list_namespaced_pod(
+    def _get_pods(self, cluster_name):
+        cl = self._connect_cluster(cluster_name)['core']
+        assert cl.api_client
+        result = cl.list_namespaced_pod(
                 self.namespace, limit=self.limit).to_dict()
         c = result['metadata'].get('_continue')
         pods = result['items']
         while c:
-            result = client.CoreV1Api().list_namespaced_pod(
+            result = cl.list_namespaced_pod(
                 self.namespace, limit=self.limit, _continue = c).to_dict()
             c = result['metadata'].get('_continue')
             pods.extend(result['items'])
@@ -172,21 +200,32 @@ class HiggsDemo(object):
         rv = result['metadata']['resource_version']
         return pods, rv
 
-    def cleanup(self):
-        try:
-            client.CoreV1Api().delete_namespaced_config_map('runjob', self.namespace)
-        except:
-            pass
-        self._cleanup_jobs()
-        self._cleanup_pods()
+    def cleanup(self, cluster_name = None):
+        cluster_name = cluster_name or self.default_cluster_name
+        self._cleanup_cm(cluster_name)
+        self._cleanup_jobs(cluster_name)
+        self._cleanup_pods(cluster_name)
 
     def prepare(self, cluster_name = None):
-        self._connect_cluster(cluster_name)
-        utils.create_from_yaml(self.kube_client, 'ds-prepull.yaml')
+        cluster_name = cluster_name or self.default_cluster_name
+        self._create_from_yaml('ds-prepull.yaml', cluster_name)
 
+<<<<<<< HEAD
     def status(self, fn=None):
         self._pods = {'Running': [], 'Pending': [], 'Succeeded': [], 'Failed': [], 'Unknown': []}
         pods, rv = self._get_pods()
+=======
+    def status(self, cluster_name = None):
+        cluster_name = cluster_name or self.default_cluster_name
+        result = {'date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'jobs': {'succeeded': 0}, 'pods': {}}
+        jobs = self._get_jobs(cluster_name)
+        for job in jobs:
+            if 'succeeded' in job['status'] and job['status']['succeeded'] == 1:
+               result['jobs']['succeeded'] += 1
+        result['jobs']['total'] = len(jobs)
+
+        pods = self._get_pods(cluster_name)
+>>>>>>> user-definable cluster context
         for pod in pods:
             pod_name = pod['metadata']['name']
             for p in self._pods.keys():
@@ -226,7 +265,8 @@ class HiggsDemo(object):
 
             fn(result)
 
-    def submit(self):
+    def submit(self, cluster_name = None):
+        cluster_name = cluster_name or self.default_cluster_name
         s3_basedir = self._s3_basedir()
         manifests = []
 
@@ -260,8 +300,9 @@ class HiggsDemo(object):
                 params["%s_host" % self.storage_type] = self.storage_host
 
                 manifests.append(self._job_manifest(**params))
-
-        self._kube_submit(manifests)
+        if not manifests:
+            raise RuntimeError('no manifests to submit')
+        self._kube_submit(manifests, cluster_name)
 
 
 class HiggsDemoCli(App):

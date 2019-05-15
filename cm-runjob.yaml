@@ -5,28 +5,29 @@ metadata:
 data:
   runjob.sh: |+
     set -e
-    #mc config host add s3 ${S3_HOST} ${S3_ACCESS} ${S3_SECRET}
-    if [ ! -z "${GCS_ACCESS}" ]; then
-      mc config host add gs ${GCS_HOST} ${GCS_ACCESS} ${GCS_SECRET} --api s3v2 --lookup dns
-    fi
+    echo hello world
+    # mc config host add s3 ${S3_HOST} ${S3_ACCESS} ${S3_SECRET}
+    # if [ ! -z "${GCS_ACCESS}" ]; then
+    #   mc config host add gs ${GCS_HOST} ${GCS_ACCESS} ${GCS_SECRET} --api s3v2 --lookup dns
+    # fi
     
-    mkdir /tmp/inputs
-    echo ${CMS_INPUT_FILES}|tr ',' '\n'|while read x;do
-        time mc cp $x /tmp/inputs;
-    done
-    export CMS_INPUT_FILES=$(find /tmp/inputs -type f|sed 's|^|file:|'|tr '\n' ','|sed 's|,$||')
-    echo "Running locally over: ${CMS_INPUT_FILES}"
-    
-    
-    time /opt/cms/entrypoint.sh cmsRun ${CMS_CONFIG} > /dev/null 2>&1
-    
-    echo validate
-    echo 'test(){if(gFile->Get("demo")){return 0;} return 1;}' > /tmp/test.C
-    /opt/cms/entrypoint.sh root -b -q ${CMS_OUTPUT_FILE} /tmp/test.C
+    # mkdir /tmp/inputs
+    # echo ${CMS_INPUT_FILES}|tr ',' '\n'|while read x;do
+    #     time mc cp $x /tmp/inputs;
+    # done
+    # export CMS_INPUT_FILES=$(find /tmp/inputs -type f|sed 's|^|file:|'|tr '\n' ','|sed 's|,$||')
+    # echo "Running locally over: ${CMS_INPUT_FILES}"
     
     
-    /opt/cms/entrypoint.sh python /dump_json_pyroot.py ${CMS_OUTPUT_FILE} ${CMS_DATASET_NAME} ${CMS_OUTPUT_JSON_FILE}
-    cat ${CMS_OUTPUT_JSON_FILE}
+    # time /opt/cms/entrypoint.sh cmsRun ${CMS_CONFIG} > /dev/null 2>&1
     
-    time mc cp ${CMS_OUTPUT_JSON_FILE} ${CMS_S3_BASEDIR}/${CMS_OUTPUT_S3PATH}
-    mc ls ${CMS_S3_BASEDIR}/${CMS_OUTPUT_S3PATH}
+    # echo validate
+    # echo 'test(){if(gFile->Get("demo")){return 0;} return 1;}' > /tmp/test.C
+    # /opt/cms/entrypoint.sh root -b -q ${CMS_OUTPUT_FILE} /tmp/test.C
+    
+    
+    # /opt/cms/entrypoint.sh python /dump_json_pyroot.py ${CMS_OUTPUT_FILE} ${CMS_DATASET_NAME} ${CMS_OUTPUT_JSON_FILE}
+    # cat ${CMS_OUTPUT_JSON_FILE}
+    
+    # time mc cp ${CMS_OUTPUT_JSON_FILE} ${CMS_S3_BASEDIR}/${CMS_OUTPUT_S3PATH}
+    # mc ls ${CMS_S3_BASEDIR}/${CMS_OUTPUT_S3PATH}
