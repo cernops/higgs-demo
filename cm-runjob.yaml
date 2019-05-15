@@ -5,28 +5,49 @@ metadata:
 data:
   runjob.sh: |+
     set -e
-    #mc config host add s3 ${S3_HOST} ${S3_ACCESS} ${S3_SECRET}
-    if [ ! -z "${GCS_ACCESS}" ]; then
-      mc config host add gs ${GCS_HOST} ${GCS_ACCESS} ${GCS_SECRET} --api s3v2 --lookup dns
-    fi
-    
-    mkdir /tmp/inputs
-    echo ${CMS_INPUT_FILES}|tr ',' '\n'|while read x;do
-        time mc cp $x /tmp/inputs;
-    done
-    export CMS_INPUT_FILES=$(find /tmp/inputs -type f|sed 's|^|file:|'|tr '\n' ','|sed 's|,$||')
+    set -x
+
     echo "Running locally over: ${CMS_INPUT_FILES}"
     
-    
+    export CMS_INPUT_FILES="file:///tmp/inputs/$(basename $CMS_INPUT_FILES)"
+    echo "Actual files ${CMS_INPUT_FILES}"
     time /opt/cms/entrypoint.sh cmsRun ${CMS_CONFIG} > /dev/null 2>&1
     
-    echo validate
-    echo 'test(){if(gFile->Get("demo")){return 0;} return 1;}' > /tmp/test.C
-    /opt/cms/entrypoint.sh root -b -q ${CMS_OUTPUT_FILE} /tmp/test.C
-    
-    
+    mkdir -p /tmp/outputs
+    CMS_OUTPUT_JSON_FILE="/tmp/outputs/$(basename ${CMS_INPUT_FILES})"
     /opt/cms/entrypoint.sh python /dump_json_pyroot.py ${CMS_OUTPUT_FILE} ${CMS_DATASET_NAME} ${CMS_OUTPUT_JSON_FILE}
     cat ${CMS_OUTPUT_JSON_FILE}
+
+    export REDIS_HOST="10.0.0.4"
+    python /publish_single.py ${CMS_OUTPUT_JSON_FILE}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: getfile
+data:
+  getfile.sh: |+
+    set -e
+    set -x
+
+    cat >/root/.boto <<EOF
+    [Credentials]
+    gs_access_key_id = $GCS_ACCESS
+    gs_secret_access_key=$GCS_SECRET
+
+    [Boto]
+    https_validate_certificates = True
     
-    time mc cp ${CMS_OUTPUT_JSON_FILE} ${CMS_S3_BASEDIR}/${CMS_OUTPUT_S3PATH}
-    mc ls ${CMS_S3_BASEDIR}/${CMS_OUTPUT_S3PATH}
+    [GSUtil]
+    content_language = en
+    default_api_version = 2
+    default_project_id = nimble-valve-236407
+    parallel_process_count=1
+    parallel_thread_count=1
+    parallel_composite_upload_threshold=0
+    sliced_object_download_threshold=0
+    EOF
+
+    chmod 644 /root/.boto
+
+    trickle -d 10000 -u 5000 gsutil cp $(echo $CMS_INPUT_FILES | sed 's#gs/#gs://#') /tmp/inputs/$(basename $CMS_INPUT_FILES)

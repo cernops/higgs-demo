@@ -6,6 +6,33 @@ metadata:
 spec:
   template:
     spec:
+      terminationGracePeriodSeconds: 5
+      initContainers:
+      - name: prepull
+        image: gcr.io/nimble-valve-236407/worker
+        command: [ "bash", "-c", "/getfile.sh" ]
+        env:
+          - name: CMS_INPUT_FILES
+            value: $eventfile
+          - name: GCS_ACCESS
+            value: $gs_access_key
+          - name: GCS_SECRET
+            value: $gs_secret_key
+          - name: GCS_HOST
+            value: $gs_host
+        resources:
+          requests:
+            cpu: 0.9
+            memory: 2Gi
+          limits:
+            cpu: 0.9
+            memory: 2Gi
+        volumeMounts:
+          - mountPath: /getfile.sh
+            subPath: getfile.sh
+            name: getfile
+          - mountPath: /tmp/inputs
+            name: inputs
       containers:
       - name: cmsrun
         image: $image
@@ -43,19 +70,29 @@ spec:
             value: $gs_host
         resources:
           requests:
-            cpu: $cpu_limit
+            cpu: 0.9
+            memory: 2Gi
           limits:
-            cpu: $cpu_limit
+            cpu: 0.9
+            memory: 2Gi
         volumeMounts:
           - mountPath: /runjob.sh
             subPath: runjob.sh
             name: runjob
+          - mountPath: /tmp/inputs
+            name: inputs
       restartPolicy: Never
       volumes:
       - name: runjob
         configMap:
           name: runjob
           defaultMode: 0755
+      - name: getfile
+        configMap:
+          name: getfile
+          defaultMode: 0755
+      - name: inputs
+        emptyDir: {}
   backoffLimit: $backoff_limit
   completions: 1
   parallelism: 1
