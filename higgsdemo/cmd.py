@@ -106,9 +106,11 @@ class Watch(Command):
 
     def take_action(self, parsed_args):
         hd = demo._higgs_demo(parsed_args)
-        while True:
-            fn = lambda r : print("%s %s" % (datetime.now(), r))
-            hd.status(fn=fn)
+        start = datetime.now()
+        def fn(r):
+            now = datetime.now()
+            print("%s %s %s" % ((now-start).total_seconds(), now, r))
+        hd.status(fn=fn)
         
 
 class Prepare(Command):
