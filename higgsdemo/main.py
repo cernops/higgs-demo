@@ -157,6 +157,7 @@ class HiggsDemo(object):
     def _cleanup_cm(self, cluster_name):
         cl = self._connect_cluster(cluster_name)['core']
         cl.delete_namespaced_config_map('runjob', self.namespace)
+        cl.delete_namespaced_config_map('getfile', self.namespace)
 
     def _cleanup_jobs(self, cluster_name):
         cl = self._connect_cluster(cluster_name)['batch']
@@ -220,12 +221,6 @@ class HiggsDemo(object):
     def status(self, cluster_name = None, fn=None):
         self._pods = {'Pulling': [], 'Running': [], 'Pending': [], 'Succeeded': [], 'Failed': [], 'Unknown': []}
         cluster_name = cluster_name or self.default_cluster_name
-        result = {'date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'jobs': {'succeeded': 0}, 'pods': {}}
-        jobs = self._get_jobs(cluster_name)
-        for job in jobs:
-            if 'succeeded' in job['status'] and job['status']['succeeded'] == 1:
-               result['jobs']['succeeded'] += 1
-        result['jobs']['total'] = len(jobs)
 
         pods, rv = self._get_pods(cluster_name)
         for pod in pods:
@@ -313,8 +308,7 @@ class HiggsDemo(object):
                 params["%s_host" % self.storage_type] = self.storage_host
 
                 manifests.append(self._job_manifest(**params))
-        if not manifests:
-            raise RuntimeError('no manifests to submit')
+
         self._kube_submit(manifests, cluster_name)
 
 

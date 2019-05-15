@@ -71,9 +71,9 @@ spec:
           - name: GCS_PROJECT_ID
             value: $gs_project_id
           - name: DOWNLOAD_MAX_KB
-            value: $download_max_kb
+            value: "$download_max_kb"
           - name: UPLOAD_MAX_KB
-            value: $upload_max_kb
+            value: "$upload_max_kb"
           - name: REDIS_HOST
             value: $redis_host
         resources:
