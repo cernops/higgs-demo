@@ -49,4 +49,4 @@ data:
 
     chmod 644 /root/.boto
 
-    trickle -d 10000 -u 5000 gsutil cp $(echo $CMS_INPUT_FILES | sed 's#gs/#gs://#') /tmp/inputs/$(basename $CMS_INPUT_FILES)
+    trickle -d $DOWNLOAD_MAX_KB -u $UPLOAD_MAX_KB gsutil cp $(echo $CMS_INPUT_FILES | sed 's#gs/#gs://#') /tmp/inputs/$(basename $CMS_INPUT_FILES)

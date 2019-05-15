@@ -68,6 +68,10 @@ spec:
             value: $gs_secret_key
           - name: GCS_HOST
             value: $gs_host
+          - name: DOWNLOAD_MAX_KB
+            value: $download_max_kb
+          - name: UPLOAD_MAX_KB
+            value: $upload_max_kb
           - name: REDIS_HOST
             value: $redis_host
         resources:
