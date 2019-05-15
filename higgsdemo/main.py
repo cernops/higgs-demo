@@ -22,7 +22,8 @@ class HiggsDemo(object):
             secret_key='', storage_type='s3', storage_host='',
             cpu_limit='1000m', bucket='higgs-demo-nl', output_bucket='higgs-demo-nl',
             backoff_limit=5,  multipart_threads=10, output_file='/tmp/output.root',
-            output_json_file='/tmp/output.json', run='run6', limit=1000):
+            output_json_file='/tmp/output.json', redis_host='10.0.0.4',
+            run='run6', limit=1000):
         super(HiggsDemo, self).__init__()
         self.dataset_pattern = dataset_pattern
         self.config = config
@@ -44,6 +45,7 @@ class HiggsDemo(object):
         self.multipart_threads = multipart_threads
         self.output_file = output_file
         self.output_json_file = output_json_file
+        self.redis_host = redis_host
         self.run = run
         self.limit = limit
 
@@ -252,7 +254,9 @@ class HiggsDemo(object):
                     'image': self.image, 's3_basedir': s3_basedir,
                     'cpu_limit': self.cpu_limit, 'backoff_limit': self.backoff_limit,
                     'multipart_threads': self.multipart_threads,
-                    'output_file': self.output_file, 'output_json_file': self.output_json_file
+                    'output_file': self.output_file,
+                    'output_json_file': self.output_json_file,
+                    'redis_host': self.redis_host
                 }
                 for st in ('s3', 'gs'):
                     params["%s_access_key" % st] = ''

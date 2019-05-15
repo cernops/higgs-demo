@@ -82,6 +82,9 @@ class Submit(Command):
         parser.add_argument('--output-json-file', dest='output_json_file',
                             default='/tmp/output.json',
                             help='the local path for the output json file')
+        parser.add_argument('--redis-host', dest='redist_host',
+                            default='10.0.0.4',
+                            help='the redis host to publish output data')
         parser.add_argument('--limit', dest='limit', type=int,
                             default=1000,
                             help='the limit of objects per kube api query')

@@ -18,7 +18,6 @@ data:
     /opt/cms/entrypoint.sh python /dump_json_pyroot.py ${CMS_OUTPUT_FILE} ${CMS_DATASET_NAME} ${CMS_OUTPUT_JSON_FILE}
     cat ${CMS_OUTPUT_JSON_FILE}
 
-    export REDIS_HOST="10.0.0.4"
     python /publish_single.py ${CMS_OUTPUT_JSON_FILE}
 ---
 apiVersion: v1
