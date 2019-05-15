@@ -82,16 +82,13 @@ class Submit(Command):
         parser.add_argument('--output-json-file', dest='output_json_file',
                             default='/tmp/output.json',
                             help='the local path for the output json file')
-        parser.add_argument('--redis-host', dest='redist_host',
-                            default='10.0.0.4',
-                            help='the redis host to publish output data')
         parser.add_argument('--download-max-kb', dest='download_max_kb',
                             default=10000,
                             help='the max download speed per file in kb')
         parser.add_argument('--upload-max-kb', dest='upload_max_kb',
                             default=5000,
                             help='the max upload speed per file in kb')
-        parser.add_argument('--redis-host', dest='redist_host',
+        parser.add_argument('--redis-host', dest='redis_host',
                             default='10.0.0.4',
                             help='the redis host to publish output data')
         parser.add_argument('--gcs-project-id', dest='gcs_project_id',
