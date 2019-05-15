@@ -295,13 +295,14 @@ class HiggsDemo(object):
                     stream_for_file = 'el_stream'
                 if 'DoubleMu' in eventfile:
                     stream_for_file = 'mu_stream'
-                if year_for_file and stream_for_file and lumi_value_for_file:
+                if all(x is not None for x in [year_for_file, stream_for_file, lumi_value_for_file]):
                     lumi_data_for_file = {
                         'stream': '{}_{}'.format(stream_for_file, year_for_file),
                         'value': lumi_value_for_file
                     }
                 else:
                     lumi_data_for_file = None
+
                 self._dataset_job_counter.setdefault(fullsetname, 0)
                 cur = self._dataset_job_counter[fullsetname]
                 self._dataset_job_counter[fullsetname] += 1
