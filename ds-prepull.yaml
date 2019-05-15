@@ -20,6 +20,8 @@ spec:
       initContainers:
       - name: prepull
         image: gcr.io/nimble-valve-236407/cms-higgs-4l-full
+      - name: prepull-worker
+        image: gcr.io/nimble-valve-236407/worker
       containers:
       - name: pause
         image: gcr.io/google_containers/pause
