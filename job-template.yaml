@@ -68,6 +68,8 @@ spec:
             value: $gs_secret_key
           - name: GCS_HOST
             value: $gs_host
+          - name: GCS_PROJECT_ID
+            value: $gs_project_id
           - name: DOWNLOAD_MAX_KB
             value: $download_max_kb
           - name: UPLOAD_MAX_KB

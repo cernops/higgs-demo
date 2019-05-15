@@ -94,6 +94,9 @@ class Submit(Command):
         parser.add_argument('--redis-host', dest='redist_host',
                             default='10.0.0.4',
                             help='the redis host to publish output data')
+        parser.add_argument('--gcs-project-id', dest='gcs_project_id',
+                            default='nimble-valve-236407',
+                            help='the gcs project id being used')
         parser.add_argument('--limit', dest='limit', type=int,
                             default=1000,
                             help='the limit of objects per kube api query')

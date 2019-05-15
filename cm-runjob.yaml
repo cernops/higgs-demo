@@ -40,7 +40,7 @@ data:
     [GSUtil]
     content_language = en
     default_api_version = 2
-    default_project_id = nimble-valve-236407
+    default_project_id = $GCS_PROJECT_ID
     parallel_process_count=1
     parallel_thread_count=1
     parallel_composite_upload_threshold=0

@@ -23,6 +23,7 @@ class HiggsDemo(object):
             cpu_limit='1000m', bucket='higgs-demo-nl', output_bucket='higgs-demo-nl',
             backoff_limit=5,  multipart_threads=10, output_file='/tmp/output.root',
             output_json_file='/tmp/output.json', redis_host='10.0.0.4',
+            gcs_project_id='nimble-valve-236407',
             download_max_kb=10000, upload_max_kb=5000,
             run='run6', limit=1000):
         super(HiggsDemo, self).__init__()
@@ -47,6 +48,7 @@ class HiggsDemo(object):
         self.output_file = output_file
         self.output_json_file = output_json_file
         self.redis_host = redis_host
+        self.gcs_project_id = gcs_project_id
         self.download_max_kb = download_max_kb
         self.upload_max_kb = upload_max_kb
         self.run = run
@@ -261,7 +263,8 @@ class HiggsDemo(object):
                     'output_json_file': self.output_json_file,
                     'redis_host': self.redis_host,
                     'download_max_kb': self.download_max_kb,
-                    'upload_max_kb': self.upload_max_kb
+                    'upload_max_kb': self.upload_max_kb,
+                    'gs_project_id': self.gcs_project_id
                 }
                 for st in ('s3', 'gs'):
                     params["%s_access_key" % st] = ''
