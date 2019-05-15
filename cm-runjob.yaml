@@ -17,7 +17,7 @@ data:
     CMS_OUTPUT_JSON_FILE="/tmp/outputs/$(basename ${CMS_INPUT_FILES})"
     /opt/cms/entrypoint.sh python /dump_json_pyroot.py ${CMS_OUTPUT_FILE} ${CMS_DATASET_NAME} ${CMS_OUTPUT_JSON_FILE}
     cat ${CMS_OUTPUT_JSON_FILE}
-
+    echo ${CMS_LUMINOSITY_DATA}
     python /publish_single.py ${CMS_OUTPUT_JSON_FILE}
 ---
 apiVersion: v1
