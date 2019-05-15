@@ -46,10 +46,12 @@ class HiggsDemo(object):
         self.output_json_file = output_json_file
         self.run = run
         self.limit = limit
-
+        self.kube_client = None
         self._dataset_job_counter = {}
 
-        kube_config.load_kube_config()
+
+    def _connect_cluster(self, cluster_name = None):
+        kube_config.load_kube_config(context = cluster_name)
         self.kube_client = client.ApiClient()
 
     def _job_template(self):
@@ -114,7 +116,8 @@ class HiggsDemo(object):
         return "%s/%s/testoutputs/higgs4lbucket/%s/eventselection" % (
                 self.storage_type, self.bucket, self.run)
 
-    def _kube_submit(self, manifests):
+    def _kube_submit(self, manifests, cluster_name = None):
+        self._connect_cluster(cluster_name)
         utils.create_from_yaml(self.kube_client, 'cm-runjob.yaml')
         for i in range(0, len(manifests), self.limit):
             yaml = ''
@@ -177,7 +180,8 @@ class HiggsDemo(object):
         self._cleanup_jobs()
         self._cleanup_pods()
 
-    def prepare(self):
+    def prepare(self, cluster_name = None):
+        self._connect_cluster(cluster_name)
         utils.create_from_yaml(self.kube_client, 'ds-prepull.yaml')
 
     def status(self, fn=None):
