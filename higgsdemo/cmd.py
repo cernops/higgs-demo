@@ -20,6 +20,9 @@ class Cleanup(Command):
         parser.add_argument('--limit', dest='limit', type=int,
                             default=1000,
                             help='the limit of objects per kube api query')
+        parser.add_argument('--cluster', dest='cluster', type=str,
+                            default=None,
+                            help='Cluster Context Name to use')
         return parser
 
     def take_action(self, parsed_args):
@@ -100,6 +103,12 @@ class Submit(Command):
         parser.add_argument('--limit', dest='limit', type=int,
                             default=1000,
                             help='the limit of objects per kube api query')
+        parser.add_argument('--dry-run', dest='dry', type=bool,
+                            default=False,
+                            help='Dry run. Prints Manifests instead of submitting')
+        parser.add_argument('--cluster', dest='cluster', type=str,
+                            default=None,
+                            help='Cluster Context Name to use')
         return parser
 
     def take_action(self, parsed_args):
@@ -117,6 +126,9 @@ class Watch(Command):
         parser.add_argument('--namespace', dest='namespace',
                             default='default',
                             help='the kube namespace to use')
+        parser.add_argument('--cluster', dest='cluster', type=str,
+                            default=None,
+                            help='Cluster Context Name to use')
         return parser
 
     def take_action(self, parsed_args):
@@ -141,6 +153,9 @@ class Prepare(Command):
         parser.add_argument('--limit', dest='limit', type=int,
                             default=1000,
                             help='the limit of objects per kube api query')
+        parser.add_argument('--cluster', dest='cluster', type=str,
+                            default=None,
+                            help='Cluster Context Name to use')
         return parser
 
     def take_action(self, parsed_args):
