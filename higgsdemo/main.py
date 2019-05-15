@@ -2,6 +2,7 @@ import glob
 import joblib
 import os
 import re
+import json
 import sys
 import yaml
 import traceback
@@ -145,6 +146,7 @@ class HiggsDemo(object):
             f = open('/tmp/yaml', 'w')
             f.write(yaml)
             f.close()
+            print(yaml)
             self._create_from_yaml('/tmp/yaml', cluster_name)
 
     def _cleanup_cm(self, cluster_name):
@@ -267,8 +269,32 @@ class HiggsDemo(object):
         for datasetfile in glob.glob("datasets_s3/%s" % self.dataset_pattern):
             datasetname = self._datasetname(datasetfile)
             fullsetname = self._fullsetname(datasetname)
-
+            if 'cms_run' in fullsetname: #is data and not simulation
+                lumi_data = json.load(open('lumi/{}.json'.format(fullsetname)))
+            else:
+                lumi_data = {}
             for eventfile in open(datasetfile).readlines():
+                eventfile = eventfile.strip()
+                eospath = eventfile.replace('s3/higgs-demo','root://eospublic.cern.ch/')
+                lumi_value_for_file = lumi_data.get(eospath)
+                year_for_file = None
+                stream_for_file = None
+                if '2012' in eventfile:
+                    year_for_file = 2012
+                if '2011' in eventfile:
+                    year_for_file = 2011
+                if 'DoubleEl' in eventfile:
+                    stream_for_file = 'el_stream'
+                if 'DoubleMu' in eventfile:
+                    stream_for_file = 'mu_stream'
+                if year_for_file and stream_for_file and lumi_value_for_file:
+                    lumi_data_for_file = {
+                        'stream': '{}_{}'.format(stream_for_file, year_for_file),
+                        'value': lumi_value_for_file
+                    }
+                else:
+                    lumi_data_for_file = None
+                print(lumi_data_for_file)
                 self._dataset_job_counter.setdefault(fullsetname, 0)
                 cur = self._dataset_job_counter[fullsetname]
                 self._dataset_job_counter[fullsetname] += 1
@@ -277,13 +303,14 @@ class HiggsDemo(object):
 
                 params = {
                     'datasetname': datasetname, 'namespace': self.namespace,
-                    'fullsetname': fullsetname, 'eventfile': eventfile.strip().replace('s3', self.storage_type).replace('higgs-demo', self.bucket),
+                    'fullsetname': fullsetname, 'eventfile': eventfile.replace('s3', self.storage_type).replace('higgs-demo', self.bucket),
                     'jobname': jobname, 's3_outputpath': s3_outputpath,
                     'config': self.config, 'jsonfile': self._jsonfile(self.config),
                     'image': self.image, 's3_basedir': s3_basedir,
                     'cpu_limit': self.cpu_limit, 'backoff_limit': self.backoff_limit,
                     'multipart_threads': self.multipart_threads,
-                    'output_file': self.output_file, 'output_json_file': self.output_json_file
+                    'output_file': self.output_file, 'output_json_file': self.output_json_file,
+                    'lumi_data': json.dumps(lumi_data_for_file)
                 }
                 for st in ('s3', 'gs'):
                     params["%s_access_key" % st] = ''

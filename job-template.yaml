@@ -19,6 +19,8 @@ spec:
             value: $output_file
           - name: CMS_OUTPUT_JSON_FILE
             value: $output_json_file
+          - name: CMS_LUMINOSITY_DATA
+            value: '$lumi_data'
           - name: CMS_S3_BASEDIR
             value: $s3_basedir
           - name: CMS_OUTPUT_S3PATH
