@@ -210,11 +210,6 @@ class HiggsDemo(object):
         cluster_name = cluster_name or self.default_cluster_name
         self._create_from_yaml('ds-prepull.yaml', cluster_name)
 
-<<<<<<< HEAD
-    def status(self, fn=None):
-        self._pods = {'Running': [], 'Pending': [], 'Succeeded': [], 'Failed': [], 'Unknown': []}
-        pods, rv = self._get_pods()
-=======
     def status(self, cluster_name = None):
         cluster_name = cluster_name or self.default_cluster_name
         result = {'date': datetime.now().strftime("%Y-%m-%d %H:%M:%S"), 'jobs': {'succeeded': 0}, 'pods': {}}
@@ -225,7 +220,6 @@ class HiggsDemo(object):
         result['jobs']['total'] = len(jobs)
 
         pods = self._get_pods(cluster_name)
->>>>>>> user-definable cluster context
         for pod in pods:
             pod_name = pod['metadata']['name']
             for p in self._pods.keys():
