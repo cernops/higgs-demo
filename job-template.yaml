@@ -61,7 +61,7 @@ spec:
           - name: CMS_CONFIG
             value: $config
           - name: CMS_DATASET_NAME
-            value: $datasetname
+            value: $fullsetname
           - name: MC_MULTIPART_THREADS
             value: "$multipart_threads"
           - name: S3_ACCESS
