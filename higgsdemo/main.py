@@ -172,6 +172,7 @@ class HiggsDemo(object):
     def cleanup(self):
         try:
             client.CoreV1Api().delete_namespaced_config_map('runjob', self.namespace)
+            client.CoreV1Api().delete_namespaced_config_map('getfile', self.namespace)
         except:
             pass
         self._cleanup_jobs()
@@ -181,7 +182,7 @@ class HiggsDemo(object):
         utils.create_from_yaml(self.kube_client, 'ds-prepull.yaml')
 
     def status(self, fn=None):
-        self._pods = {'Running': [], 'Pending': [], 'Succeeded': [], 'Failed': [], 'Unknown': []}
+        self._pods = {'Pulling': [], 'Running': [], 'Pending': [], 'Succeeded': [], 'Failed': [], 'Unknown': []}
         pods, rv = self._get_pods()
         for pod in pods:
             pod_name = pod['metadata']['name']
@@ -208,6 +209,9 @@ class HiggsDemo(object):
                 timeout_seconds=0, resource_version=rv):
             pod_name = item['object'].metadata.name
             phase = item['object'].status.phase
+            prepull = None
+            if item['object'].status.init_container_statuses:
+                prepull = item['object'].status.init_container_statuses[0].state.running
             t = item['type']
             for p in self._pods.keys():
                 try:
@@ -215,7 +219,10 @@ class HiggsDemo(object):
                 except:
                     pass
             if t != 'DELETED':
-                self._pods[phase].append(pod_name)
+                if prepull:
+                    self._pods['Pulling'].append(pod_name)
+                else:
+                    self._pods[phase].append(pod_name)
             result = {}
             for p in self._pods.keys():
                 result[p] = len(self._pods[p])
