@@ -18,7 +18,7 @@ from kubernetes import watch
 
 class HiggsDemo(object):
 
-    def __init__(self, dataset_pattern='*Higgs*', config='', namespace='default',
+    def __init__(self, dataset_pattern='*Higgs*', namespace='default',
             image='lukasheinrich/cms-higgs-4l-full', access_key='',
             secret_key='', storage_type='s3', storage_host='',
             cpu_limit='1000m', bucket='higgs-demo-nl', output_bucket='higgs-demo-nl',
@@ -29,7 +29,6 @@ class HiggsDemo(object):
             run='run6', limit=1000, cluster=None):
         super(HiggsDemo, self).__init__()
         self.dataset_pattern = dataset_pattern
-        self.config = config
         self.namespace = namespace
         self.image = image
         self.access_key = access_key
@@ -73,16 +72,12 @@ class HiggsDemo(object):
         manifest = template.safe_substitute(kwargs)
         return manifest
 
-    def _jsonfile(self, config):
-        jsonfile = ''
-        if 'data' in config:
-            parts = config.split(':')
-            config = parts[0]
-            jsonfile = {
-                '2011': '/json_files/Cert_160404-180252_7TeV_ReRecoNov08_Collisions11_JSON.txt',
-                '2012': '/json_files/Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON.txt'
-            }[parts[1]]
-        return jsonfile
+    def _jsonfile(self, year):
+        jsonfiles = {
+            2011: '/json_files/Cert_160404-180252_7TeV_ReRecoNov08_Collisions11_JSON.txt',
+            2012: '/json_files/Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON.txt'
+        }
+        return jsonfiles[year]
 
     def _datasetname(self, filename):
         replace = [
@@ -246,6 +241,7 @@ class HiggsDemo(object):
             fullsetname = self._fullsetname(datasetname)
             if 'cms_run' in fullsetname: #is data and not simulation
                 lumi_data = json.load(open('lumi/{}.json'.format(fullsetname)))
+                is_data = True
             else:
                 lumi_data = {}
             for eventfile in open(datasetfile).readlines():
@@ -254,21 +250,26 @@ class HiggsDemo(object):
                 lumi_value_for_file = lumi_data.get(eospath)
                 year_for_file = None
                 stream_for_file = None
-                if '2012' in eventfile:
-                    year_for_file = 2012
-                if '2011' in eventfile:
-                    year_for_file = 2011
-                if 'DoubleEl' in eventfile:
-                    stream_for_file = 'el_stream'
-                if 'DoubleMu' in eventfile:
-                    stream_for_file = 'mu_stream'
-                if all(x is not None for x in [year_for_file, stream_for_file, lumi_value_for_file]):
-                    lumi_data_for_file = {
-                        'stream': '{}_{}'.format(stream_for_file, year_for_file),
-                        'value': lumi_value_for_file
-                    }
+                lumi_data_for_file = None
+                if is_data:
+                    config = "/configs/demoanalyzer_cfg_level4data.py"
+                    if '2012' in eventfile:
+                        year_for_file = 2012
+                    if '2011' in eventfile:
+                        year_for_file = 2011
+                    if 'DoubleEl' in eventfile:
+                        stream_for_file = 'el_stream'
+                    if 'DoubleMu' in eventfile:
+                        stream_for_file = 'mu_stream'
+                    if all(x is not None for x in [year_for_file, stream_for_file, lumi_value_for_file]):
+                        lumi_data_for_file = {
+                            'stream': '{}_{}'.format(stream_for_file, year_for_file),
+                            'value': lumi_value_for_file
+                        }
+                    config_json_file = self._jsonfile(year_for_file)
                 else:
-                    lumi_data_for_file = None
+                    config = "/configs/demoanalyzer_cfg_level4MC.py"
+                    config_json_file = ''
 
                 self._dataset_job_counter.setdefault(fullsetname, 0)
                 cur = self._dataset_job_counter[fullsetname]
@@ -280,7 +281,7 @@ class HiggsDemo(object):
                     'datasetname': datasetname, 'namespace': self.namespace,
                     'fullsetname': fullsetname, 'eventfile': eventfile.strip().replace('s3', self.storage_type).replace('higgs-demo', self.bucket),
                     'jobname': jobname, 's3_outputpath': s3_outputpath,
-                    'config': self.config, 'jsonfile': self._jsonfile(self.config),
+                    'config': config, 'jsonfile': config_json_file,
                     'image': self.image, 's3_basedir': s3_basedir,
                     'cpu_limit': self.cpu_limit, 'backoff_limit': self.backoff_limit,
                     'multipart_threads': self.multipart_threads,
