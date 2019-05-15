@@ -25,7 +25,7 @@ class HiggsDemo(object):
             output_json_file='/tmp/output.json', redis_host='10.0.0.4',
             gcs_project_id='nimble-valve-236407',
             download_max_kb=10000, upload_max_kb=5000,
-            run='run6', limit=1000):
+            run='run6', limit=1000, cluster=None):
         super(HiggsDemo, self).__init__()
         self.dataset_pattern = dataset_pattern
         self.config = config
@@ -56,7 +56,7 @@ class HiggsDemo(object):
 
         self._dataset_job_counter = {}
 
-        kube_config.load_kube_config()
+        kube_config.load_kube_config(context=cluster)
         self.kube_client = client.ApiClient()
 
     def _job_template(self):

@@ -20,6 +20,9 @@ class Cleanup(Command):
         parser.add_argument('--limit', dest='limit', type=int,
                             default=1000,
                             help='the limit of objects per kube api query')
+        parser.add_argument('--cluster', dest='cluster',
+                            default=None,
+                            help='the cluster context to be used')
         return parser
 
     def take_action(self, parsed_args):
@@ -97,6 +100,9 @@ class Submit(Command):
         parser.add_argument('--limit', dest='limit', type=int,
                             default=1000,
                             help='the limit of objects per kube api query')
+        parser.add_argument('--cluster', dest='cluster',
+                            default=None,
+                            help='the cluster context to be used')
         return parser
 
     def take_action(self, parsed_args):
@@ -114,6 +120,9 @@ class Watch(Command):
         parser.add_argument('--namespace', dest='namespace',
                             default='default',
                             help='the kube namespace to use')
+        parser.add_argument('--cluster', dest='cluster',
+                            default=None,
+                            help='the cluster context to be used')
         return parser
 
     def take_action(self, parsed_args):
@@ -138,6 +147,9 @@ class Prepare(Command):
         parser.add_argument('--limit', dest='limit', type=int,
                             default=1000,
                             help='the limit of objects per kube api query')
+        parser.add_argument('--cluster', dest='cluster',
+                            default=None,
+                            help='the cluster context to be used')
         return parser
 
     def take_action(self, parsed_args):
