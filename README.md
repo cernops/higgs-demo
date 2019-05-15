@@ -31,6 +31,7 @@ The dataset-pattern param specifies which subset of the full dataset should be
 processed - the whole dataset is ~70TB, so this is a useful option. The other
 two params are the S3 credentials.
 
+
 An example reading from CERN's S3 service:
 ```bash
 higgsdemo submit --dataset-pattern datasets_s3/*SMHiggs* --storage-host https://s3.cern.ch --s3-access-key ... --s3-secret-key ...

@@ -20,6 +20,9 @@ class Cleanup(Command):
         parser.add_argument('--limit', dest='limit', type=int,
                             default=1000,
                             help='the limit of objects per kube api query')
+        parser.add_argument('--cluster', dest='cluster', type=str,
+                            default=None,
+                            help='Cluster Context Name to use')
         return parser
 
     def take_action(self, parsed_args):
