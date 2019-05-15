@@ -3,6 +3,7 @@ import joblib
 import os
 import re
 import sys
+import json
 import yaml
 
 from string import Template
@@ -243,8 +244,31 @@ class HiggsDemo(object):
         for datasetfile in glob.glob("datasets_s3/%s" % self.dataset_pattern):
             datasetname = self._datasetname(datasetfile)
             fullsetname = self._fullsetname(datasetname)
-
+            if 'cms_run' in fullsetname: #is data and not simulation
+                lumi_data = json.load(open('lumi/{}.json'.format(fullsetname)))
+            else:
+                lumi_data = {}
             for eventfile in open(datasetfile).readlines():
+                eventfile = eventfile.strip()
+                eospath = eventfile.replace('s3/higgs-demo','root://eospublic.cern.ch/')
+                lumi_value_for_file = lumi_data.get(eospath)
+                year_for_file = None
+                stream_for_file = None
+                if '2012' in eventfile:
+                    year_for_file = 2012
+                if '2011' in eventfile:
+                    year_for_file = 2011
+                if 'DoubleEl' in eventfile:
+                    stream_for_file = 'el_stream'
+                if 'DoubleMu' in eventfile:
+                    stream_for_file = 'mu_stream'
+                if year_for_file and stream_for_file and lumi_value_for_file:
+                    lumi_data_for_file = {
+                        'stream': '{}_{}'.format(stream_for_file, year_for_file),
+                        'value': lumi_value_for_file
+                    }
+                else:
+                    lumi_data_for_file = None
                 self._dataset_job_counter.setdefault(fullsetname, 0)
                 cur = self._dataset_job_counter[fullsetname]
                 self._dataset_job_counter[fullsetname] += 1
@@ -264,7 +288,8 @@ class HiggsDemo(object):
                     'redis_host': self.redis_host,
                     'download_max_kb': self.download_max_kb,
                     'upload_max_kb': self.upload_max_kb,
-                    'gs_project_id': self.gcs_project_id
+                    'gs_project_id': self.gcs_project_id,
+                    'lumi_data': json.dumps(lumi_data_for_file)
                 }
                 for st in ('s3', 'gs'):
                     params["%s_access_key" % st] = ''

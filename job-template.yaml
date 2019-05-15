@@ -44,6 +44,8 @@ spec:
         image: $image
         command: [ "bash", "-c", "/runjob.sh" ]
         env:
+          - name: CMS_LUMINOSITY_DATA
+            value: '$lumi_data'
           - name: CMS_JSON
             value: $jsonfile
           - name: CMS_INPUT_FILES
