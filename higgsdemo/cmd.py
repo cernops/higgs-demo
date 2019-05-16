@@ -37,9 +37,6 @@ class Submit(Command):
 
     def get_parser(self, prog_name):
         parser = super(Submit, self).get_parser(prog_name)
-        parser.add_argument('--config', dest='config',
-                            default='/configs/demoanalyzer_cfg_level4MC.py',
-                            help='the demo analyzer config file')
         parser.add_argument('--dataset-pattern', dest='dataset_pattern',
                             default='*Higgs*',
                             help='the pattern of datasets to process')
