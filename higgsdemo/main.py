@@ -26,9 +26,14 @@ class HiggsDemo(object):
             output_json_file='/tmp/output.json', redis_host='10.0.0.4',
             gcs_project_id='nimble-valve-236407',
             download_max_kb=10000, upload_max_kb=5000,
-            run='run6', limit=1000, cluster=None):
+            run='run6', limit=1000, cluster=None, dataset_mapping=None,
+            dataset_index=None):
         super(HiggsDemo, self).__init__()
         self.dataset_pattern = dataset_pattern
+        if dataset_mapping:
+            with open(dataset_mapping, "r") as f:
+                self.dataset_mapping = json.load(f)
+        self.dataset_index = dataset_index
         self.namespace = namespace
         self.image = image
         self.access_key = access_key
@@ -57,7 +62,9 @@ class HiggsDemo(object):
         self._dataset_job_counter = {}
 
         kube_config.load_kube_config(context=cluster)
-        self.kube_client = client.ApiClient()
+        self.api_client = client.ApiClient()
+        self.core_client = client.CoreV1Api()
+        self.batch_client = client.BatchV1Api()
 
     def _job_template(self):
         content = ''
@@ -118,7 +125,7 @@ class HiggsDemo(object):
                 self.storage_type, self.bucket, self.run)
 
     def _kube_submit(self, manifests):
-        utils.create_from_yaml(self.kube_client, 'cm-runjob.yaml')
+        utils.create_from_yaml(self.api_client, 'cm-runjob.yaml')
         for i in range(0, len(manifests), self.limit):
             yaml = ''
             for m in manifests[i:i + self.limit]:
@@ -126,45 +133,45 @@ class HiggsDemo(object):
             f = open('/tmp/yaml', 'w')
             f.write(yaml)
             f.close()
-            utils.create_from_yaml(self.kube_client, '/tmp/yaml')
+            utils.create_from_yaml(self.api_client, '/tmp/yaml')
 
     def _cleanup_jobs(self):
-        result = client.BatchV1Api().delete_collection_namespaced_job(
+        result = self.batch_client.delete_collection_namespaced_job(
                 self.namespace, limit = self.limit).to_dict()
         c = result['metadata'].get('_continue')
         while c:
-            result = client.BatchV1Api().delete_collection_namespaced_job(
+            result = self.batch_client.delete_collection_namespaced_job(
                     namespace, limit = limit, _continue = c).to_dict()
             c = result['metadata'].get('_continue')
 
     def _cleanup_pods(self):
-        result = client.CoreV1Api().delete_collection_namespaced_pod(
+        result = self.core_client.delete_collection_namespaced_pod(
                 self.namespace, limit = self.limit).to_dict()
         c = result['metadata'].get('_continue')
         while c:
-            result = client.CoreV1Api().delete_collection_namespaced_pod(
+            result = self.core_client.delete_collection_namespaced_pod(
                     namespace, limit = limit, _continue = c).to_dict()
             c = result['metadata'].get('_continue')
       
     def _get_jobs(self):
-        result = client.BatchV1Api().list_namespaced_job(
+        result = self.batch_client.list_namespaced_job(
                 self.namespace, limit=self.limit).to_dict()
         c = result['metadata'].get('_continue')
         jobs = result['items']
         while c:
-            result = client.BatchV1Api().list_namespaced_job(
+            result = self.batch_client.list_namespaced_job(
                 self.namespace, limit=self.limit, _continue = c).to_dict()
             c = result['metadata'].get('_continue')
             jobs.extend(result['items'])
         return jobs
 
     def _get_pods(self):
-        result = client.CoreV1Api().list_namespaced_pod(
+        result = self.core_client.list_namespaced_pod(
                 self.namespace, limit=self.limit).to_dict()
         c = result['metadata'].get('_continue')
         pods = result['items']
         while c:
-            result = client.CoreV1Api().list_namespaced_pod(
+            result = self.core_client.list_namespaced_pod(
                 self.namespace, limit=self.limit, _continue = c).to_dict()
             c = result['metadata'].get('_continue')
             pods.extend(result['items'])
@@ -172,30 +179,43 @@ class HiggsDemo(object):
         rv = result['metadata']['resource_version']
         return pods, rv
 
+    def _dataset_files(self):
+        if self.dataset_pattern:
+            return glob.glob("datasets_s3/%s" % self.dataset_pattern)
+        elif self.dataset_mapping:
+            return self.dataset_mapping[self.dataset_index]
+        return []
+
     def cleanup(self):
         try:
-            client.CoreV1Api().delete_namespaced_config_map('runjob', self.namespace)
-            client.CoreV1Api().delete_namespaced_config_map('getfile', self.namespace)
+            self.core_client.delete_namespaced_config_map('runjob', self.namespace)
+            self.core_client.delete_namespaced_config_map('getfile', self.namespace)
         except:
             pass
         self._cleanup_jobs()
         self._cleanup_pods()
 
     def prepare(self):
-        utils.create_from_yaml(self.kube_client, 'ds-prepull.yaml')
+        utils.create_from_yaml(self.api_client, 'ds-prepull.yaml')
 
     def status(self, fn=None):
         self._pods = {'Pulling': [], 'Running': [], 'Pending': [], 'Succeeded': [], 'Failed': [], 'Unknown': []}
         pods, rv = self._get_pods()
         for pod in pods:
             pod_name = pod['metadata']['name']
+            phase = pod['status']['phase']
+            prepull = None
+            if pod['status']['init_container_statuses']:
+                prepull = pod['status']['init_container_statuses'][0]['state']['running']
             for p in self._pods.keys():
                 try:
                     self._pods[p].remove(pod_name)
                 except:
                     pass
-            phase = pod['status']['phase']
-            self._pods[phase].append(pod_name)
+            if prepull:
+                self._pods['Pulling'].append(pod_name)
+            else:
+                self._pods[phase].append(pod_name)
 
         result = {}
         for p in self._pods.keys():
@@ -206,7 +226,7 @@ class HiggsDemo(object):
 
         fn(result)
         w = watch.Watch()
-        api = client.CoreV1Api()
+        api = self.core_client
         for item in w.stream(
             api.list_namespaced_pod, namespace=self.namespace,
                 timeout_seconds=0, resource_version=rv):
@@ -236,7 +256,8 @@ class HiggsDemo(object):
         s3_basedir = self._s3_basedir()
         manifests = []
 
-        for datasetfile in glob.glob("datasets_s3/%s" % self.dataset_pattern):
+        dataset_files = self._dataset_files()
+        for datasetfile in dataset_files:
             datasetname = self._datasetname(datasetfile)
             fullsetname = self._fullsetname(datasetname)
             if 'cms_run' in fullsetname: #is data and not simulation

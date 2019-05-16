@@ -38,8 +38,14 @@ class Submit(Command):
     def get_parser(self, prog_name):
         parser = super(Submit, self).get_parser(prog_name)
         parser.add_argument('--dataset-pattern', dest='dataset_pattern',
-                            default='*Higgs*',
+                            default=None,
                             help='the pattern of datasets to process')
+        parser.add_argument('--dataset-mapping', dest='dataset_mapping',
+                            default=None,
+                            help='the mapping file of dataset files to process')
+        parser.add_argument('--dataset-index', dest='dataset_index',
+                            default=None, type=int,
+                            help='the mapping index of the dataset files to process')
         parser.add_argument('--run', dest='run',
                             default='run6',
                             help='the name of the demo run')
