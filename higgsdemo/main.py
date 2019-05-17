@@ -21,11 +21,11 @@ class HiggsDemo(object):
     def __init__(self, dataset_pattern='*Higgs*', namespace='default',
             image='lukasheinrich/cms-higgs-4l-full', access_key='',
             secret_key='', storage_type='s3', storage_host='',
-            cpu_limit='1000m', bucket='higgs-demo-nl', output_bucket='higgs-demo-nl',
+            cpu_limit='900m', bucket='higgs-demo-nl', output_bucket='higgs-demo-nl',
             backoff_limit=5,  multipart_threads=10, output_file='/tmp/output.root',
             output_json_file='/tmp/output.json', redis_host='10.0.0.4',
             gcs_project_id='nimble-valve-236407',
-            download_max_kb=10000, upload_max_kb=5000,
+            download_max_kb=50000, upload_max_kb=10000,
             run='run6', limit=1000, cluster=None, dataset_mapping=None,
             dataset_index=None):
         super(HiggsDemo, self).__init__()

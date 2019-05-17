@@ -74,7 +74,7 @@ class Submit(Command):
                             default='higgs-demo-nl',
                             help='the name of the bucket to write the output')
         parser.add_argument('--cpu-limit', dest='cpu_limit',
-                            default="1000m",
+                            default="900m",
                             help='the kube cpu request / limit')
         parser.add_argument('--backoff-limit', dest='backoff_limit',
                             default=5,
@@ -89,10 +89,10 @@ class Submit(Command):
                             default='/tmp/output.json',
                             help='the local path for the output json file')
         parser.add_argument('--download-max-kb', dest='download_max_kb',
-                            default=10000,
+                            default=50000,
                             help='the max download speed per file in kb')
         parser.add_argument('--upload-max-kb', dest='upload_max_kb',
-                            default=5000,
+                            default=10000,
                             help='the max upload speed per file in kb')
         parser.add_argument('--redis-host', dest='redis_host',
                             default='10.0.0.4',
@@ -101,7 +101,7 @@ class Submit(Command):
                             default='nimble-valve-236407',
                             help='the gcs project id being used')
         parser.add_argument('--limit', dest='limit', type=int,
-                            default=1000,
+                            default=200,
                             help='the limit of objects per kube api query')
         parser.add_argument('--cluster', dest='cluster',
                             default=None,
