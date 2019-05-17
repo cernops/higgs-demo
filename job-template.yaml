@@ -108,7 +108,8 @@ spec:
           name: getfile
           defaultMode: 0755
       - name: inputs
-        emptyDir: {}
+        hostPath:
+          path: "/mnt/disks/ssd0"
   backoffLimit: $backoff_limit
   completions: 1
   parallelism: 1
