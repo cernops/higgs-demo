@@ -42,7 +42,6 @@ setup(
 
     provides=[],
     install_requires=[
-        'boto3',
         'cliff',
         'joblib',
         #'jupyterlab',
