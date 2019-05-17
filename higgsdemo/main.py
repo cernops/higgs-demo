@@ -260,6 +260,7 @@ class HiggsDemo(object):
         for datasetfile in dataset_files:
             datasetname = self._datasetname(datasetfile)
             fullsetname = self._fullsetname(datasetname)
+            is_data = False
             if 'cms_run' in fullsetname: #is data and not simulation
                 lumi_data = json.load(open('lumi/{}.json'.format(fullsetname)))
                 is_data = True
