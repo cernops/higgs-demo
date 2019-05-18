@@ -1,6 +1,10 @@
 import logging
 import higgsdemo.main as demo
+import json
+import subprocess
 import time
+
+from google.cloud import container_v1
 
 from cliff.command import Command
 from datetime import datetime
@@ -171,6 +175,99 @@ class Notebook(Command):
 
     def take_action(self, parsed_args):
         jupyterlab_main()
+
+
+class Clusters(Command):
+    "create the demo clusters as described in dataset mapping file"
+
+    log = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super(Clusters, self).get_parser(prog_name)
+        parser.add_argument('--gcs-project-id', dest='gcs_project_id',
+                            default='nimble-valve-236407',
+                            help='the gcs project id being used')
+        parser.add_argument('--gcs-region', dest='gcs_region',
+                            default='europe-west4',
+                            help='the gcs region to use for the clusters')
+        parser.add_argument('--dataset-mapping', dest='dataset_mapping',
+                            default=None, required=True,
+                            help='the mapping file of dataset files to process')
+        parser.add_argument('--prefix', dest='prefix',
+                            default='kubecon-demo-',
+                            help='the prefix to use when naming clusters')
+        return parser
+
+    def take_action(self, parsed_args):
+        dataset_mapping = parsed_args.dataset_mapping
+        if not dataset_mapping:
+            raise RuntimeError('dataset mapping file is required')
+
+        with open(dataset_mapping, "r") as f:
+            datasets = json.load(f)
+
+        client = container_v1.ClusterManagerClient()
+        clusters = client.list_clusters(parsed_args.gcs_project_id, '-', parent=parsed_args.gcs_region).clusters
+
+        cluster_names = [ cluster.name for cluster in clusters ]
+        for i, ds in enumerate(datasets):
+            cname = '{0}{1}'.format(parsed_args.prefix, i)
+            if cname in cluster_names:
+                raise RuntimeError('cluster {0} already exists, check cluster list'.format(cname))
+
+        for i, ds in enumerate(datasets):
+            cname = '{0}{1}'.format(parsed_args.prefix, i)
+            r = subprocess.run(
+                    ('gcloud container clusters create --quiet --async --no-enable-basic-auth '
+                     '--no-issue-client-certificate --disk-size 90 '
+                     '--disk-type pd-ssd --image-type cos --machine-type {0} '
+                     '--num-nodes {1} --region {2} --cluster-version 1.12.7-gke.10 '
+                     '--metadata disable-legacy-endpoints=true --no-enable-cloud-logging '
+                     '--no-enable-cloud-monitoring --no-enable-autorepair --enable-ip-alias '
+                     '--create-subnetwork name={3},range=/21 --local-ssd-count 1 {3}'.format(
+                         ds['flavor'], ds['nodes'], parsed_args.gcs_region, cname)).split(' '))
+
+
+class ClustersDelete(Command):
+    "delete all clusters in the mapping file"
+
+    log = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super(ClustersDelete, self).get_parser(prog_name)
+        parser.add_argument('--gcs-project-id', dest='gcs_project_id',
+                            default='nimble-valve-236407',
+                            help='the gcs project id being used')
+        parser.add_argument('--gcs-region', dest='gcs_region',
+                            default='europe-west4',
+                            help='the gcs region to use for the clusters')
+        parser.add_argument('--dataset-mapping', dest='dataset_mapping',
+                            default=None, required=True,
+                            help='the mapping file of dataset files to process')
+        parser.add_argument('--prefix', dest='prefix',
+                            default='kubecon-demo-',
+                            help='the prefix to use when naming clusters')
+        return parser
+
+    def take_action(self, parsed_args):
+        dataset_mapping = parsed_args.dataset_mapping
+        if not dataset_mapping:
+            raise RuntimeError('dataset mapping file is required')
+
+        with open(dataset_mapping, "r") as f:
+            datasets = json.load(f)
+
+        client = container_v1.ClusterManagerClient()
+
+        for i, ds in enumerate(datasets):
+            cname = '{0}{1}'.format(parsed_args.prefix, i)
+            try:
+                r = subprocess.run(
+                        ('gcloud container clusters --quiet delete {0} --region {1}'.format(
+                             cname, parsed_args.gcs_region).split(' ')))
+            except Exception as e:
+                print(e)
+                continue
 
 
 class Error(Command):

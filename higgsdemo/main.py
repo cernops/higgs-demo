@@ -32,7 +32,6 @@ class HiggsDemo(object):
         self.dataset_pattern = dataset_pattern
         if dataset_mapping:
             self.dataset_mapping = dataset_mapping
-            print(dataset_mapping)
             with open(dataset_mapping, "r") as f:
                 self.dataset_mapping = json.load(f)
         self.dataset_index = dataset_index
