@@ -67,7 +67,7 @@ setup(
             'prepare = higgsdemo.cmd:Prepare',
             'submit = higgsdemo.cmd:Submit',
             'watch = higgsdemo.cmd:Watch',
-            'clusters = higgsdemo.cmd:Clusters',
+            'clusters-create = higgsdemo.cmd:ClustersCreate',
             'clusters-delete = higgsdemo.cmd:ClustersDelete',
         ],
     },

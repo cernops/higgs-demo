@@ -20,14 +20,14 @@ class HiggsDemo(object):
 
     def __init__(self, dataset_pattern='*Higgs*', namespace='default',
             image='lukasheinrich/cms-higgs-4l-full', access_key='',
-            secret_key='', storage_type='s3', storage_host='',
+            secret_key='', storage_type='gs', storage_host='https://storage.googleapis.com',
             cpu_limit='900m', bucket='higgs-demo-nl', output_bucket='higgs-demo-nl',
             backoff_limit=5,  multipart_threads=10, output_file='/tmp/output.root',
             output_json_file='/tmp/output.json', redis_host='10.0.0.4',
             gcs_project_id='nimble-valve-236407',
             download_max_kb=50000, upload_max_kb=10000,
-            run='run6', limit=1000, cluster=None, dataset_mapping=None,
-            dataset_index=None):
+            run='run6', limit=200, cluster=None, dataset_mapping=None,
+            dataset_index=None, gcs_region='europe-west4', prefix='kubecon-demo-'):
         super(HiggsDemo, self).__init__()
         self.dataset_pattern = dataset_pattern
         if dataset_mapping:
@@ -59,10 +59,14 @@ class HiggsDemo(object):
         self.upload_max_kb = upload_max_kb
         self.run = run
         self.limit = limit
+        self.prefix = prefix
+        self.gcs_region = gcs_region
+        self.cluster = cluster
 
         self._dataset_job_counter = {}
 
-        kube_config.load_kube_config(context=cluster)
+        kube_config.load_kube_config(
+                context="gke_%s_%s_%s" % (gcs_project_id, gcs_region, cluster))
         self.api_client = client.ApiClient()
         self.core_client = client.CoreV1Api()
         self.batch_client = client.BatchV1Api()
@@ -131,10 +135,10 @@ class HiggsDemo(object):
             yaml = ''
             for m in manifests[i:i + self.limit]:
                 yaml += "\n---\n%s" % m
-            f = open('/tmp/yaml', 'w')
+            f = open('/tmp/{0}'.format(self.cluster), 'w')
             f.write(yaml)
             f.close()
-            utils.create_from_yaml(self.api_client, '/tmp/yaml')
+            utils.create_from_yaml(self.api_client, '/tmp/{0}'.format(self.cluster))
 
     def _cleanup_jobs(self):
         result = self.batch_client.delete_collection_namespaced_job(
@@ -142,7 +146,7 @@ class HiggsDemo(object):
         c = result['metadata'].get('_continue')
         while c:
             result = self.batch_client.delete_collection_namespaced_job(
-                    namespace, limit = limit, _continue = c).to_dict()
+                    self.namespace, limit = self.limit, _continue = c).to_dict()
             c = result['metadata'].get('_continue')
 
     def _cleanup_pods(self):
@@ -151,7 +155,7 @@ class HiggsDemo(object):
         c = result['metadata'].get('_continue')
         while c:
             result = self.core_client.delete_collection_namespaced_pod(
-                    namespace, limit = limit, _continue = c).to_dict()
+                    self.namespace, limit = self.limit, _continue = c).to_dict()
             c = result['metadata'].get('_continue')
       
     def _get_jobs(self):
