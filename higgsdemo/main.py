@@ -31,6 +31,8 @@ class HiggsDemo(object):
         super(HiggsDemo, self).__init__()
         self.dataset_pattern = dataset_pattern
         if dataset_mapping:
+            self.dataset_mapping = dataset_mapping
+            print(dataset_mapping)
             with open(dataset_mapping, "r") as f:
                 self.dataset_mapping = json.load(f)
         self.dataset_index = dataset_index
@@ -183,7 +185,7 @@ class HiggsDemo(object):
         if self.dataset_pattern:
             return glob.glob("datasets_s3/%s" % self.dataset_pattern)
         elif self.dataset_mapping:
-            return self.dataset_mapping[self.dataset_index]
+            return self.dataset_mapping[self.dataset_index]['datasets']
         return []
 
     def cleanup(self):
