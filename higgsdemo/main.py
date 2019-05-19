@@ -1,9 +1,9 @@
 import glob
 import joblib
+import json
 import os
 import re
 import sys
-import json
 import yaml
 
 from string import Template
@@ -27,14 +27,20 @@ class HiggsDemo(object):
             gcs_project_id='nimble-valve-236407',
             download_max_kb=50000, upload_max_kb=10000,
             run='run6', limit=200, cluster=None, dataset_mapping=None,
-            dataset_index=None, gcs_region='europe-west4', prefix='kubecon-demo-'):
+            dataset_index=None, gcs_region='europe-west4', prefix='kubecon-demo-',
+            dpath='/mnt/disks/ssd0'):
         super(HiggsDemo, self).__init__()
         self.dataset_pattern = dataset_pattern
+        self.dataset_index = dataset_index
+        self.ftype = "Directory"
+        self.dpath = dpath
         if dataset_mapping:
             self.dataset_mapping = dataset_mapping
             with open(dataset_mapping, "r") as f:
                 self.dataset_mapping = json.load(f)
-        self.dataset_index = dataset_index
+                if self.dataset_index and 'dpath' in self.dataset_mapping[self.dataset_index]:
+                    self.dpath = self.dataset_mapping[self.dataset_index]['dpath'] 
+                    self.ftype = "File"
         self.namespace = namespace
         self.image = image
         self.access_key = access_key
@@ -130,7 +136,10 @@ class HiggsDemo(object):
                 self.storage_type, self.bucket, self.run)
 
     def _kube_submit(self, manifests):
-        utils.create_from_yaml(self.api_client, 'cm-runjob.yaml')
+        try:
+            utils.create_from_yaml(self.api_client, 'cm-runjob.yaml')
+        except Exception as e:
+            pass
         for i in range(0, len(manifests), self.limit):
             yaml = ''
             for m in manifests[i:i + self.limit]:
@@ -271,6 +280,8 @@ class HiggsDemo(object):
                 is_data = True
             else:
                 lumi_data = {}
+            if not os.path.isfile(datasetfile):
+                continue
             for eventfile in open(datasetfile).readlines():
                 eventfile = eventfile.strip()
                 eospath = eventfile.replace('s3/higgs-demo','root://eospublic.cern.ch/')
@@ -318,7 +329,8 @@ class HiggsDemo(object):
                     'download_max_kb': self.download_max_kb,
                     'upload_max_kb': self.upload_max_kb,
                     'gs_project_id': self.gcs_project_id,
-                    'lumi_data': json.dumps(lumi_data_for_file)
+                    'lumi_data': json.dumps(lumi_data_for_file),
+                    'dpath': self.dpath, 'ftype': self.ftype
                 }
                 for st in ('s3', 'gs'):
                     params["%s_access_key" % st] = ''

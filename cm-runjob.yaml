@@ -7,18 +7,25 @@ data:
     set -e
     set -x
 
-    echo "Running locally over: ${CMS_INPUT_FILES}"
-    
-    export CMS_INPUT_FILES="file:///tmp/inputs/$(basename $CMS_INPUT_FILES)"
-    echo "Actual files ${CMS_INPUT_FILES}"
-    time /opt/cms/entrypoint.sh cmsRun ${CMS_CONFIG} > /dev/null 2>&1
-    
-    mkdir -p /tmp/outputs
-    CMS_OUTPUT_JSON_FILE="/tmp/outputs/$(basename ${CMS_INPUT_FILES})"
-    /opt/cms/entrypoint.sh python /dump_json_pyroot.py ${CMS_OUTPUT_FILE} ${CMS_DATASET_NAME} ${CMS_OUTPUT_JSON_FILE}
-    cat ${CMS_OUTPUT_JSON_FILE}
-    echo ${CMS_LUMINOSITY_DATA}
-    python /publish_single.py ${CMS_OUTPUT_JSON_FILE}
+    if [ "$DPATH" != "/mnt/disks/ssd0" ]; then
+      echo "Launched in test mode, won't do compute"
+      sleep 60
+    else
+      echo "Running locally over: ${CMS_INPUT_FILES}"
+
+      export CMS_INPUT_FILES="file:///tmp/inputs/$(basename $CMS_INPUT_FILES)"
+      echo "Actual files ${CMS_INPUT_FILES}"
+      time /opt/cms/entrypoint.sh cmsRun ${CMS_CONFIG} > /dev/null 2>&1
+
+      mkdir -p /tmp/outputs
+      CMS_OUTPUT_JSON_FILE="/tmp/outputs/$(basename ${CMS_INPUT_FILES})"
+      /opt/cms/entrypoint.sh python /dump_json_pyroot.py ${CMS_OUTPUT_FILE} ${CMS_DATASET_NAME} ${CMS_OUTPUT_JSON_FILE}
+      cat ${CMS_OUTPUT_JSON_FILE}
+      echo ${CMS_LUMINOSITY_DATA}
+      python /publish_single.py ${CMS_OUTPUT_JSON_FILE}
+      rm -f "/tmp/inputs/$(basename $CMS_INPUT_FILES)" || true
+    fi
+
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -49,4 +56,10 @@ data:
 
     chmod 644 /root/.boto
 
-    trickle -d $DOWNLOAD_MAX_KB -u $UPLOAD_MAX_KB gsutil cp $(echo $CMS_INPUT_FILES | sed 's#gs/#gs://#') /tmp/inputs/$(basename $CMS_INPUT_FILES)
+    DESTFILE="/tmp/inputs/$(basename $CMS_INPUT_FILES)"
+    if [ "$DPATH" != "/mnt/disks/ssd0" ]; then
+      echo "Launched in test mode, won't write to disk"
+      trickle -s -d $DOWNLOAD_MAX_KB -u $UPLOAD_MAX_KB gsutil cp $(echo $CMS_INPUT_FILES | sed 's#gs/#gs://#') - | cat > /dev/null
+    else
+      trickle -s -d $DOWNLOAD_MAX_KB -u $UPLOAD_MAX_KB gsutil cp $(echo $CMS_INPUT_FILES | sed 's#gs/#gs://#') $DESTFILE
+    fi

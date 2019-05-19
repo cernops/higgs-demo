@@ -26,6 +26,8 @@ spec:
             value: "$download_max_kb"
           - name: UPLOAD_MAX_KB
             value: "$upload_max_kb"
+          - name: DPATH
+            value: "$dpath"
         resources:
           requests:
             cpu: 0.9
@@ -84,6 +86,8 @@ spec:
             value: "$upload_max_kb"
           - name: REDIS_HOST
             value: $redis_host
+          - name: DPATH
+            value: "$dpath"
         resources:
           requests:
             cpu: 0.9
@@ -109,7 +113,8 @@ spec:
           defaultMode: 0755
       - name: inputs
         hostPath:
-          path: "/mnt/disks/ssd0"
+          path: "$dpath"
+          type: $ftype
   backoffLimit: $backoff_limit
   completions: 1
   parallelism: 1
