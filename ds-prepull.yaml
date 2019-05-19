@@ -21,8 +21,10 @@ spec:
       initContainers:
       - name: prepull
         image: gcr.io/nimble-valve-236407/cms-higgs-4l-full
+        command: ["bash", "-c", "echo", "1"]
       - name: prepull-worker
         image: gcr.io/nimble-valve-236407/worker
+        command: ["bash", "-c", "echo", "1"]
       containers:
       - name: pause
         image: gcr.io/google_containers/pause
