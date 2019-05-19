@@ -210,7 +210,10 @@ class HiggsDemo(object):
         self._cleanup_pods()
 
     def prepare(self):
-        utils.create_from_yaml(self.api_client, 'ds-prepull.yaml')
+        try:
+            utils.create_from_yaml(self.api_client, 'ds-prepull.yaml')
+        except Exception as exc:
+            pass
 
     def status(self, fn=None):
         self._pods = {'Pulling': [], 'Running': [], 'Pending': [], 'Succeeded': [], 'Failed': [], 'Unknown': []}
