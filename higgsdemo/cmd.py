@@ -11,6 +11,13 @@ from datetime import datetime
 from jupyterlab.labapp import main as jupyterlab_main
 
 
+def parallel_cleanup(args, i):
+    args.cluster = '{0}{1}'.format(args.prefix, i)
+    args.dataset_index = i
+    d = demo._higgs_demo(args)
+    d.cleanup()
+
+
 class Cleanup(Command):
     "clean up a higgs demo deployment in the currently configured cluster"
 
@@ -30,8 +37,15 @@ class Cleanup(Command):
         return parser
 
     def take_action(self, parsed_args):
-        hd = demo._higgs_demo(parsed_args)
-        hd.cleanup()
+        if not parsed_args.dataset_mapping:
+            hd = demo._higgs_demo(parsed_args)
+            return hd.cleanup()
+
+        with open(parsed_args.dataset_mapping, "r") as f:
+            datasets = json.load(f)
+
+        import joblib
+        jobs = joblib.Parallel(n_jobs=len(datasets))(joblib.delayed(parallel_cleanup)(parsed_args, i) for i, ds in enumerate(datasets))
 
 
 def parallel_submit(args, i):
@@ -251,8 +265,8 @@ class ClustersCreate(Command):
         cluster_names = [ cluster.name for cluster in clusters ]
         for i, ds in enumerate(datasets):
             cname = '{0}{1}'.format(parsed_args.prefix, i)
-            if cname in cluster_names:
-                raise RuntimeError('cluster {0} already exists, check cluster list'.format(cname))
+            #if cname in cluster_names:
+            #    raise RuntimeError('cluster {0} already exists, check cluster list'.format(cname))
 
         for i, ds in enumerate(datasets):
             cname = '{0}{1}'.format(parsed_args.prefix, i)
