@@ -256,6 +256,9 @@ class ClustersCreate(Command):
 
         for i, ds in enumerate(datasets):
             cname = '{0}{1}'.format(parsed_args.prefix, i)
+            local_ssd_count = 1
+            if 'dpath' in ds:
+                local_ssd_count = 0
             r = subprocess.run(
                     ('gcloud container clusters create --quiet --async --no-enable-basic-auth '
                      '--no-issue-client-certificate --disk-size 90 '
@@ -263,9 +266,9 @@ class ClustersCreate(Command):
                      '--num-nodes {1} --region {2} --cluster-version 1.12.7-gke.10 '
                      '--metadata disable-legacy-endpoints=true --no-enable-cloud-logging '
                      '--no-enable-cloud-monitoring --no-enable-autorepair --enable-ip-alias '
-                     '--create-subnetwork name={3},range=10.{4}.0.0/21 --local-ssd-count 1 {3}'.format(
+                     '--create-subnetwork name={3},range=10.{4}.0.0/21 --local-ssd-count {5} {3}'.format(
                          ds['flavor'], ds['nodes'], parsed_args.gcs_region, cname,
-                         (110+i))).split(' '))
+                         (110+i), local_ssd_count)).split(' '))
 
 
 class ClustersDelete(Command):
