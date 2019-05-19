@@ -1,0 +1,3 @@
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleMu/AOD/12Oct2013-v1/10001/7C24FCEE-7037-E311-A041-00259059642E.root
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleMu/AOD/12Oct2013-v1/10001/A21E1E9C-6D37-E311-A0A7-00259059642A.root
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleMu/AOD/12Oct2013-v1/10001/FE86CE0F-6737-E311-8BA6-00259059642E.root

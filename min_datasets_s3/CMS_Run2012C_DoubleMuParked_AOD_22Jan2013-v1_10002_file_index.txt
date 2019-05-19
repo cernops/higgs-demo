@@ -1,0 +1,6 @@
+s3/higgs-demo/eos/opendata/cms/Run2012C/DoubleMuParked/AOD/22Jan2013-v1/10002/3A113774-AC6E-E211-9871-20CF305B0590.root
+s3/higgs-demo/eos/opendata/cms/Run2012C/DoubleMuParked/AOD/22Jan2013-v1/10002/44BEA32B-C26E-E211-90F3-E0CB4E19F9A1.root
+s3/higgs-demo/eos/opendata/cms/Run2012C/DoubleMuParked/AOD/22Jan2013-v1/10002/52126353-AB6E-E211-8FEA-00259073E47E.root
+s3/higgs-demo/eos/opendata/cms/Run2012C/DoubleMuParked/AOD/22Jan2013-v1/10002/7CB313BD-CA6E-E211-97F6-001EC9D7F217.root
+s3/higgs-demo/eos/opendata/cms/Run2012C/DoubleMuParked/AOD/22Jan2013-v1/10002/80FECDBD-AC6E-E211-A0DA-00259073E4CA.root
+s3/higgs-demo/eos/opendata/cms/Run2012C/DoubleMuParked/AOD/22Jan2013-v1/10002/9AF91D45-BB6E-E211-9924-20CF3056171C.root

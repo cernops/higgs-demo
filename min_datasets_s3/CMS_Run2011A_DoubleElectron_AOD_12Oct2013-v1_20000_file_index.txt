@@ -1,0 +1,7 @@
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleElectron/AOD/12Oct2013-v1/20000/3EF0901F-713E-E311-9CD6-0025905964C2.root
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleElectron/AOD/12Oct2013-v1/20000/408889BD-953E-E311-B6BD-0026189438DD.root
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleElectron/AOD/12Oct2013-v1/20000/461415DF-B53E-E311-95CF-003048679150.root
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleElectron/AOD/12Oct2013-v1/20000/527CE44E-943E-E311-8F89-003048FFD728.root
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleElectron/AOD/12Oct2013-v1/20000/90676DDB-6E3E-E311-B79A-003048FF9AA6.root
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleElectron/AOD/12Oct2013-v1/20000/941A91C5-863E-E311-8184-002618943983.root
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleElectron/AOD/12Oct2013-v1/20000/F2012002-8F3E-E311-B177-0025905938B4.root

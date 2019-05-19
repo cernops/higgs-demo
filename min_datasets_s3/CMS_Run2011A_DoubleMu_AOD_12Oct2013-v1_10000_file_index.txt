@@ -1,0 +1,13 @@
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleMu/AOD/12Oct2013-v1/10000/1E79AF3B-9535-E311-91C6-003048678BC6.root
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleMu/AOD/12Oct2013-v1/10000/1E84F65A-7435-E311-ABA3-0026189438D9.root
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleMu/AOD/12Oct2013-v1/10000/206BBA99-9235-E311-8360-0026189438E8.root
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleMu/AOD/12Oct2013-v1/10000/241FB6BE-4B35-E311-9A44-003048FFCBB0.root
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleMu/AOD/12Oct2013-v1/10000/326BA5B0-9235-E311-9A93-00261894390B.root
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleMu/AOD/12Oct2013-v1/10000/6823F6A8-4C35-E311-A3B5-002590596486.root
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleMu/AOD/12Oct2013-v1/10000/769D875C-1036-E311-8A1F-003048FF86CA.root
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleMu/AOD/12Oct2013-v1/10000/7A0EAA79-6B35-E311-AD74-002618943935.root
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleMu/AOD/12Oct2013-v1/10000/827D39FE-1136-E311-A776-00259059649C.root
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleMu/AOD/12Oct2013-v1/10000/88B618EA-3535-E311-B8AA-0030486792B8.root
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleMu/AOD/12Oct2013-v1/10000/AAF94AF2-9535-E311-81DE-002590593872.root
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleMu/AOD/12Oct2013-v1/10000/BE475A36-9535-E311-8511-00304867908C.root
+s3/higgs-demo/eos/opendata/cms/Run2011A/DoubleMu/AOD/12Oct2013-v1/10000/F677BF37-9435-E311-8CF1-003048678B0E.root
