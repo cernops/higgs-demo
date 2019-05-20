@@ -1,5 +1,12 @@
 boto3
 cliff
+google-api-core
+google-auth
+google-cloud-container
+google-cloud-core
+google-cloud-datastore
+googleapis-common-protos
+grpcio
 joblib
 jupyterlab
 kubernetes
