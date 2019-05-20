@@ -34,6 +34,12 @@ class Cleanup(Command):
         parser.add_argument('--cluster', dest='cluster',
                             default=None,
                             help='the cluster context to be used')
+        parser.add_argument('--dataset-mapping', dest='dataset_mapping',
+                            default=None,
+                            help='the mapping file of dataset files to process')
+        parser.add_argument('--prefix', dest='prefix',
+                            default='kubecon-demo-',
+                            help='the prefix to use when naming clusters')
         return parser
 
     def take_action(self, parsed_args):
