@@ -38,9 +38,12 @@ class HiggsDemo(object):
             self.dataset_mapping = dataset_mapping
             with open(dataset_mapping, "r") as f:
                 self.dataset_mapping = json.load(f)
-                if self.dataset_index and 'dpath' in self.dataset_mapping[self.dataset_index]:
-                    self.dpath = self.dataset_mapping[self.dataset_index]['dpath'] 
-                    self.ftype = "File"
+                if self.dataset_index is not None and 'dpath' in self.dataset_mapping[self.dataset_index]:
+                    dpath = self.dataset_mapping[self.dataset_index]['dpath']
+                    if dpath == '/dev/null':
+                        self.ftype = "File"
+                    self.dpath = dpath
+
         self.namespace = namespace
         self.image = image
         self.access_key = access_key
