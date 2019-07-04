@@ -283,7 +283,7 @@ class ClustersCreate(Command):
                     ('gcloud container clusters create --quiet --async --no-enable-basic-auth '
                      '--no-issue-client-certificate --disk-size 90 '
                      '--disk-type pd-ssd --image-type cos --machine-type {0} '
-                     '--num-nodes {1} --region {2} --cluster-version 1.12.7-gke.10 '
+                     '--num-nodes {1} --region {2} --cluster-version 1.12.8-gke.10 '
                      '--metadata disable-legacy-endpoints=true --no-enable-cloud-logging '
                      '--no-enable-cloud-monitoring --no-enable-autorepair --enable-ip-alias '
                      '--create-subnetwork name={3},range=10.{4}.0.0/21 --local-ssd-count {5} {3}'.format(
