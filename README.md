@@ -72,6 +72,21 @@ To reperform the computation in an existing cluster, a cleanup is required:
 higgsdemo cleanup --cluster kubecon-demo-0
 ```
 
+### Sample Run
+
+```bash
+higgsdemo clusters-create --dataset-mapping config/demo-high-mem.json
+
+for i in 0 1 2 3 4 5 6 7 8 9; do gcloud container clusters get-credentials --region europe-west4 kubecon-demo-$i; done
+
+higgsdemo prepare --dataset-mapping config/demo-high-mem.json
+
+# monitor prepull progress in a single cluster
+kubectl --context ... -n prepull get po
+
+higgsdemo submit --access-key ... --secret-key ... --dataset-mapping config/demo-high-mem.json
+```
+
 ## Installation
 
 ```bash
