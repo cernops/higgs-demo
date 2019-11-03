@@ -40,6 +40,13 @@ WORKDIR ${HOME}
 RUN mkdir -p ${HOME}/.config
 #ADD gcloud ${HOME}/.config/gcloud
 
+# Install miniconda to /miniconda
+RUN curl -LO https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+RUN bash Miniconda3-latest-Linux-x86_64.sh -p ${HOME}/miniconda -b && \
+    rm Miniconda3-latest-Linux-x86_64.sh
+ENV PATH=${HOME}/miniconda/bin:${PATH}
+
+# Add sources
 RUN mkdir ${HOME}/higgsdemo
 ADD cm-runjob.yaml ${HOME}/higgsdemo/cm-runjob.yaml
 ADD config ${HOME}/higgsdemo/config
@@ -57,9 +64,14 @@ RUN chown -R jovyan.jovyan ${HOME}
 
 USER ${USER}
 
-ENV PATH=$HOME/.local/bin:$PATH
-ENV PYTHONPATH=$HOME/.local/lib/python3.7/site-packages
+# Setup Jupyter
+RUN conda install nodejs jupyterlab
+ENV JUPYTERLAB_DIR ${HOME}/jupyterlab
+RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager
+RUN jupyter labextension install jupyter-matplotlib
+RUN conda update jupyterlab && jupyter labextension update --all
 
-RUN cd higgsdemo && pip3 install --user -r requirements.txt
-RUN cd higgsdemo && python3 setup.py install --user
+# Install dependencies
+RUN cd higgsdemo && pip install -r requirements.txt
+RUN cd higgsdemo && pip install -e .
 
