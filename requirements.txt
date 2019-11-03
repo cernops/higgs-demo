@@ -15,3 +15,8 @@ numpy
 parse
 plotutils
 requests
+jupyterlab_latex
+redis
+pytz
+click
+ipympl==0.3.1
