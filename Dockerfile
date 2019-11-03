@@ -2,10 +2,10 @@ FROM python:3.7-slim
 
 # install the notebook package
 RUN pip install --no-cache --upgrade pip && \
+    pip3 install --no-cache jupyter && \
     pip3 install --no-cache jupyterhub && \
     pip3 install --no-cache jupyterlab && \
     pip3 install --no-cache notebook
-
 RUN pip3 install --no-cache virtualenv
 
 # create user with a home directory
@@ -19,7 +19,6 @@ RUN adduser --disabled-password \
     --gecos "Default user" \
     --uid ${NB_UID} \
     ${NB_USER}
-WORKDIR ${HOME}
 
 RUN apt-get update && \
     apt-get install -y git debconf-utils && \
@@ -35,6 +34,8 @@ RUN apt-get update && \
     apt-get install -y google-cloud-sdk
 
 RUN rm -rf /var/lib/apt/lists/*
+
+WORKDIR ${HOME}
 
 RUN mkdir -p ${HOME}/.config
 #ADD gcloud ${HOME}/.config/gcloud
