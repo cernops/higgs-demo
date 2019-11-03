@@ -57,6 +57,7 @@ ADD min_datasets_s3 ${HOME}/higgsdemo/min_datasets_s3
 ADD notebook ${HOME}/higgsdemo/notebook
 ADD requirements.txt ${HOME}/higgsdemo/requirements.txt
 ADD setup.py ${HOME}/higgsdemo/setup.py
+ADD prepare.sh ${HOME}/higgsdemo/prepare.sh
 
 RUN chown -R jovyan.jovyan ${HOME}
 
