@@ -33,6 +33,11 @@ RUN apt-get install -y apt-transport-https ca-certificates
 RUN apt-get update && \
     apt-get install -y google-cloud-sdk
 
+RUN echo "deb https://deb.nodesource.com/node_6.x xenial main\ndeb-src https://deb.nodesource.com/node_6.x xenial main" > /etc/apt/sources.list.d/nodejs.list
+RUN curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | sudo apt-key add -
+RUN apt-get update && \
+    apt-get install -y nodejs
+
 RUN rm -rf /var/lib/apt/lists/*
 
 WORKDIR ${HOME}
@@ -54,6 +59,9 @@ ADD requirements.txt ${HOME}/higgsdemo/requirements.txt
 ADD setup.py ${HOME}/higgsdemo/setup.py
 
 RUN chown -R jovyan.jovyan ${HOME}
+
+RUN apt-get update && apt-get install -y npm
+RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager@1.0
 
 USER ${USER}
 
