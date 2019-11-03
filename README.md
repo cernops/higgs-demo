@@ -1,5 +1,7 @@
 # Higgs Demo
 
+[![Binder](https://binder.cern.ch/badge_logo.svg)](https://binder.cern.ch/v2/gh/cernops/higgs-demo/master)
+
 Reperforming the Higgs analysis using Kubernetes.
 
 This tool helps with the submission and management of the Higgs Analysis
