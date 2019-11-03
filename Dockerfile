@@ -22,6 +22,10 @@ RUN adduser --disabled-password \
 WORKDIR ${HOME}
 
 RUN apt-get update && \
+    apt-get install -y git debconf-utils && \
+    echo "krb5-config krb5-config/add_servers_realm string CERN.CH" | debconf-set-selections && \
+    echo "krb5-config krb5-config/default_realm string CERN.CH" | debconf-set-selections && \
+    apt-get install -y krb5-user && \
     apt-get install -y curl gnupg sudo vim
 
 RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
@@ -29,6 +33,8 @@ RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.
 RUN apt-get install -y apt-transport-https ca-certificates
 RUN apt-get update && \
     apt-get install -y google-cloud-sdk
+
+RUN rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p ${HOME}/.config
 #ADD gcloud ${HOME}/.config/gcloud
