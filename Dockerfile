@@ -85,3 +85,11 @@ RUN cd higgsdemo && pip install -r requirements.txt
 RUN cd higgsdemo && pip install -e .
 
 RUN conda install jupyterhub
+
+RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.16.0/bin/linux/amd64/kubectl && \
+    chmod 755 kubectl && \
+    mv kubectl miniconda/bin
+
+RUN . miniconda/bin/activate
+
+ENV PS1="$ "
