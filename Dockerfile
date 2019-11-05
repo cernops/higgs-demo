@@ -68,15 +68,15 @@ ADD prepare.sh ${HOME}/higgsdemo/prepare.sh
 
 RUN chown -R jovyan.jovyan ${HOME}
 
-RUN apt-get update && apt-get install -y npm
-RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager@1.0
+#RUN apt-get update && apt-get install -y npm
+#RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager@1.0
 
 USER ${USER}
 
 # Setup Jupyter
 RUN conda install nodejs jupyterlab
 ENV JUPYTERLAB_DIR ${HOME}/jupyterlab
-RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager
+RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager@1.0
 RUN jupyter labextension install jupyter-matplotlib
 RUN conda update jupyterlab && jupyter labextension update --all
 
@@ -84,3 +84,4 @@ RUN conda update jupyterlab && jupyter labextension update --all
 RUN cd higgsdemo && pip install -r requirements.txt
 RUN cd higgsdemo && pip install -e .
 
+RUN conda install jupyterhub
