@@ -42,6 +42,7 @@ def update_plot(figure,jsondocs):
 def reset_data(source = None):
     source = source or os.environ.get('CMS_PLOT_SOURCE','disk:testdata.json')
     if 'redis' in source:
+        _, key = source.split(':')
         r = redis.StrictRedis(host = os.environ['REDIS_HOST'])
         r.delete(key)
     if 'testing' in source:
