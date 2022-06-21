@@ -8,6 +8,9 @@ spec:
     spec:
       terminationGracePeriodSeconds: 5
       shareProcessNamespace: true
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
       initContainers:
       - name: prepull
         image: eu.gcr.io/it-atlas-cern/worker
