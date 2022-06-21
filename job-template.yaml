@@ -10,7 +10,7 @@ spec:
       shareProcessNamespace: true
       initContainers:
       - name: prepull
-        image: gcr.io/nimble-valve-236407/worker
+        image: eu.gcr.io/it-atlas-cern/worker
         command: [ "bash", "-c", "/getfile.sh" ]
         env:
           - name: CMS_INPUT_FILES

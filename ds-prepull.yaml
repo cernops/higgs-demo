@@ -20,10 +20,10 @@ spec:
       terminationGracePeriodSeconds: 5
       initContainers:
       - name: prepull
-        image: gcr.io/nimble-valve-236407/cms-higgs-4l-full
+        image: eu.gcr.io/it-atlas-cern/cms-higgs-4l-full
         command: ["bash", "-c", "echo", "1"]
       - name: prepull-worker
-        image: gcr.io/nimble-valve-236407/worker
+        image: eu.gcr.io/it-atlas-cern/worker
         command: ["bash", "-c", "echo", "1"]
       containers:
       - name: pause
