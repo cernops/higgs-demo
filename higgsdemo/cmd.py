@@ -87,7 +87,7 @@ class Submit(Command):
                             default='default',
                             help='the kube namespace to use')
         parser.add_argument('--image', dest='image',
-                            default='gcr.io/nimble-valve-236407/cms-higgs-4l-full',
+                            default='eu.gcr.io/it-atlas-cern/cms-higgs-4l-full',
                             help='the docker image to use for jobs')
         parser.add_argument('--access-key', dest='access_key',
                             default='',
@@ -132,7 +132,7 @@ class Submit(Command):
                             default='10.0.0.4',
                             help='the redis host to publish output data')
         parser.add_argument('--gcs-project-id', dest='gcs_project_id',
-                            default='nimble-valve-236407',
+                            default='it-atlas-cern',
                             help='the gcs project id being used')
         parser.add_argument('--limit', dest='limit', type=int,
                             default=200,
@@ -244,7 +244,7 @@ class ClustersCreate(Command):
     def get_parser(self, prog_name):
         parser = super(ClustersCreate, self).get_parser(prog_name)
         parser.add_argument('--gcs-project-id', dest='gcs_project_id',
-                            default='nimble-valve-236407',
+                            default='it-atlas-cern',
                             help='the gcs project id being used')
         parser.add_argument('--gcs-region', dest='gcs_region',
                             default='europe-west4',
@@ -299,7 +299,7 @@ class ClustersDelete(Command):
     def get_parser(self, prog_name):
         parser = super(ClustersDelete, self).get_parser(prog_name)
         parser.add_argument('--gcs-project-id', dest='gcs_project_id',
-                            default='nimble-valve-236407',
+                            default='it-atlas-cern',
                             help='the gcs project id being used')
         parser.add_argument('--gcs-region', dest='gcs_region',
                             default='europe-west4',

@@ -19,12 +19,12 @@ from kubernetes import watch
 class HiggsDemo(object):
 
     def __init__(self, dataset_pattern='*Higgs*', namespace='default',
-            image='gcr.io/nimble-valve-236407/cms-higgs-4l-full', access_key='',
+            image='eu.gcr.io/it-atlas-cern/cms-higgs-4l-full', access_key='',
             secret_key='', storage_type='gs', storage_host='https://storage.googleapis.com',
             cpu_limit='900m', bucket='higgs-demo-nl', output_bucket='higgs-demo-nl',
             backoff_limit=5,  multipart_threads=10, output_file='/tmp/output.root',
             output_json_file='/tmp/output.json', redis_host='10.0.0.4',
-            gcs_project_id='nimble-valve-236407',
+            gcs_project_id='it-atlas-cern',
             download_max_kb=50000, upload_max_kb=10000,
             run='run6', limit=200, cluster=None, dataset_mapping=None,
             dataset_index=None, gcs_region='europe-west4', prefix='kubecon-demo-',
