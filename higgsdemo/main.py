@@ -19,9 +19,9 @@ from kubernetes import watch
 class HiggsDemo(object):
 
     def __init__(self, dataset_pattern='*Higgs*', namespace='default',
-            image='eu.gcr.io/it-atlas-cern/cms-higgs-4l-full', access_key='',
+            image='gcr.io/nimble-valve-236407/cms-higgs-4l-full', access_key='',
             secret_key='', storage_type='gs', storage_host='https://storage.googleapis.com',
-            cpu_limit='900m', bucket='higgs-demo-nl', output_bucket='higgs-demo-nl',
+            cpu_limit='900m', bucket='higgs-demo', output_bucket='higgs-demo-output',
             backoff_limit=5,  multipart_threads=10, output_file='/tmp/output.root',
             output_json_file='/tmp/output.json', redis_host='10.0.0.4',
             gcs_project_id='it-atlas-cern',
@@ -73,7 +73,6 @@ class HiggsDemo(object):
         self.cluster = cluster
 
         self._dataset_job_counter = {}
-
         kube_config.load_kube_config(
                 context="gke_%s_%s_%s" % (gcs_project_id, gcs_region, cluster))
         self.api_client = client.ApiClient()

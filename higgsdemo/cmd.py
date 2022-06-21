@@ -87,7 +87,7 @@ class Submit(Command):
                             default='default',
                             help='the kube namespace to use')
         parser.add_argument('--image', dest='image',
-                            default='eu.gcr.io/it-atlas-cern/cms-higgs-4l-full',
+                            default='gcr.io/nimble-valve-236407/cms-higgs-4l-full',
                             help='the docker image to use for jobs')
         parser.add_argument('--access-key', dest='access_key',
                             default='',
@@ -266,7 +266,8 @@ class ClustersCreate(Command):
             datasets = json.load(f)
 
         client = container_v1.ClusterManagerClient()
-        clusters = client.list_clusters(parsed_args.gcs_project_id, '-', parent=parsed_args.gcs_region).clusters
+        request = container_v1.ListClustersRequest(parent="projects/%s/locations/-" % parsed_args.gcs_project_id)
+        clusters = client.list_clusters(request).clusters
 
         cluster_names = [ cluster.name for cluster in clusters ]
         for i, ds in enumerate(datasets):
@@ -283,7 +284,7 @@ class ClustersCreate(Command):
                     ('gcloud container clusters create --quiet --async --no-enable-basic-auth '
                      '--no-issue-client-certificate --disk-size 90 '
                      '--disk-type pd-ssd --image-type cos --machine-type {0} '
-                     '--num-nodes {1} --region {2} --cluster-version 1.13.11-gke.9 '
+                     '--num-nodes {1} --region {2} --cluster-version 1.21.11-gke.1900 '
                      '--metadata disable-legacy-endpoints=true --no-enable-cloud-logging '
                      '--no-enable-cloud-monitoring --no-enable-autorepair --enable-ip-alias '
                      '--create-subnetwork name={3},range=10.{4}.0.0/21 --local-ssd-count {5} {3}'.format(
@@ -318,7 +319,8 @@ class ClustersDelete(Command):
             raise RuntimeError('dataset mapping file is required')
 
         client = container_v1.ClusterManagerClient()
-        clusters = client.list_clusters(parsed_args.gcs_project_id, '-', parent=parsed_args.gcs_region).clusters
+        request = container_v1.ListClustersRequest(parent="projects/%s/locations/-" % parsed_args.gcs_project_id)
+        clusters = client.list_clusters(request).clusters
 
         cluster_names = [ cluster.name for cluster in clusters ]
         print('Existing clusters: {0}'.format(cluster_names))
@@ -337,7 +339,7 @@ class ClustersDelete(Command):
 
         client = container_v1.ClusterManagerClient()
         r = subprocess.run(
-                ('gcloud container clusters --quiet delete --region {1} {0}'.format(
+                ('gcloud container clusters --quiet delete --async --region {1} {0}'.format(
                      cluster_names, parsed_args.gcs_region).split(' ')))
 
 
