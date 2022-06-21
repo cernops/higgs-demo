@@ -19,7 +19,7 @@ from kubernetes import watch
 class HiggsDemo(object):
 
     def __init__(self, dataset_pattern='*Higgs*', namespace='default',
-            image='gcr.io/nimble-valve-236407/cms-higgs-4l-full', access_key='',
+            image='eu.gcr.io/it-atlas-cern/cms-higgs-4l-full', access_key='',
             secret_key='', storage_type='gs', storage_host='https://storage.googleapis.com',
             cpu_limit='900m', bucket='higgs-demo', output_bucket='higgs-demo-output',
             backoff_limit=5,  multipart_threads=10, output_file='/tmp/output.root',

@@ -87,7 +87,7 @@ class Submit(Command):
                             default='default',
                             help='the kube namespace to use')
         parser.add_argument('--image', dest='image',
-                            default='gcr.io/nimble-valve-236407/cms-higgs-4l-full',
+                            default='eu.gcr.io/it-atlas-cern/cms-higgs-4l-full',
                             help='the docker image to use for jobs')
         parser.add_argument('--access-key', dest='access_key',
                             default='',
