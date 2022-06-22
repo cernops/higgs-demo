@@ -52,7 +52,7 @@ higgsdemo prepare --dataset-mapping config/demo-highmem-minimal.json
 
 Here's an example submission for a scaled down analysis:
 ```bash
-higgsdemo submit --dataset-mapping config/demo-highmem-minimal.json --access-key ... --secret-key ...
+higgsdemo submit --dataset-mapping config/demo-highmem-minimal.json --access-key ... --secret-key ... --redis-host ...
 ```
 
 The dataset-mapping should point to one of the config files. It will spawn
