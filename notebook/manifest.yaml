@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notebook
+  labels:
+    app: notebook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notebook
+  template:
+    metadata:
+      labels:
+        app: notebook
+    spec:
+      containers:
+      - name: redis
+        image: redis
+      - name: health
+        image: nginx
+        ports:
+        - containerPort: 80
+      - name: notebook
+        image: lukasheinrich/higgsplot
+        imagePullPolicy: Always
+        command:
+        - sh
+        - -c
+        - |
+          jupyter notebook --allow-root --ip 0.0.0.0 --port 8888
+        env:
+        - name: JUPYTER_TOKEN
+          value: higgsplot
+        - name: REDIS_HOST
+          value: '10.119.41.53'
+        - name: CMS_PLOT_SOURCE
+          value: 'redis:data'
+        ports:
+        - containerPort: 8888
+        volumeMounts: []
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 1
+          periodSeconds: 60
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 1
+          periodSeconds: 60
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notebook
+spec:
+  type: LoadBalancer
+  selector:
+    app: notebook
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8888
