@@ -19,11 +19,32 @@ data:
     echo "Actual files ${CMS_INPUT_FILES}"
     time /opt/cms/entrypoint.sh cmsRun ${CMS_CONFIG}
 
+    cat <<EOF > /publish_single.py
+    import json
+    import redis
+    import sys
+    import os
+    
+    
+    filename = sys.argv[1]
+    
+    d  = json.load(open(filename))
+    d['lumi'] = json.loads(os.environ.get('CMS_LUMINOSITY_DATA','null'))
+    dd = json.dumps(d)
+    
+    print('publishing',dd)
+    
+    r = redis.Redis(host = os.environ['REDIS_HOST'])
+    r.hset('data',filename,dd)
+    EOF
+    chmod 755 /publish_single.py
+
     mkdir -p /tmp/outputs
     CMS_OUTPUT_JSON_FILE="/tmp/outputs/$(basename ${CMS_INPUT_FILES})"
     /opt/cms/entrypoint.sh python /dump_json_pyroot.py ${CMS_OUTPUT_FILE} ${CMS_DATASET_NAME} ${CMS_OUTPUT_JSON_FILE}
     cat ${CMS_OUTPUT_JSON_FILE}
     echo ${CMS_LUMINOSITY_DATA}
+    cat /publish_single.py
     python /publish_single.py ${CMS_OUTPUT_JSON_FILE}
     rm -f "/mnt/inputs/$(basename $CMS_INPUT_FILES)" || true
 
